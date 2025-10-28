@@ -2,53 +2,55 @@ package com.example.projectapi.model;
 
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
+import java.util.Set;
+import java.util.HashSet;
 
 @Entity
-@Table(name = "users", schema = "public")
+@Table(name = "usuarios", schema = "public")
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // corresponde al GENERATED ALWAYS AS IDENTITY
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @Column(nullable = false)
-    private String name;
+    private String username;
 
     @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
-    private String role;
+    private String password;
 
     @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now()")
     private OffsetDateTime createdAt;
 
-    // Constructor vacío (obligatorio para JPA)
     public User() {
     }
 
-    // Constructor con parámetros (opcional)
-    public User(String name, String email, String role) {
-        this.name = name;
+    public User(String username, String email, String password) {
+        this.username = username;
         this.email = email;
-        this.role = role;
+        this.password = password;
     }
 
-    // Getters y setters
-    public Long getId() {
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<UserProject> proyectosAsociados = new HashSet<>();
+
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getUsername() {
+        return username;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUsername(String name) {
+        this.username = name;
     }
 
     public String getEmail() {
@@ -59,12 +61,12 @@ public class User {
         this.email = email;
     }
 
-    public String getRole() {
-        return role;
+    public String getPassword() {
+        return password;
     }
 
-    public void setRole(String role) {
-        this.role = role;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public OffsetDateTime getCreatedAt() {
