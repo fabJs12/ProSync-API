@@ -1,34 +1,35 @@
 package com.example.projectapi.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "tasks", schema = "public")
+@Table(name = "tareas", schema = "public")
 public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "titulo", nullable = false, length = 255)
     private String title;
 
+    @Column(name = "descripcion", columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false)
-    private String status;
-
     @Column(name = "due_date")
-    private LocalDate dueDate;
+    private OffsetDateTime dueDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "board_id", referencedColumnName = "id")
+    @JoinColumn(name = "id_board",  nullable = false)
     private Board board;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "responsible_id", referencedColumnName = "id")
+    @JoinColumn(name = "id_estado", nullable = false)
+    private Estado estado;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "responsible_id")
     private User responsible;
 
     @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now()")
@@ -37,10 +38,10 @@ public class Task {
     public Task() {
     }
 
-    public Task(String title, String description, String status, LocalDate dueDate, Board board, User responsible) {
+    public Task(String title, String description, Estado estado, OffsetDateTime dueDate, Board board, User responsible) {
         this.title = title;
         this.description = description;
-        this.status = status;
+        this.estado = estado;
         this.dueDate = dueDate;
         this.board = board;
         this.responsible = responsible;
@@ -71,19 +72,19 @@ public class Task {
         this.description = description;
     }
 
-    public String getStatus() {
-        return status;
+    public Estado getStatus() {
+        return estado;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setStatus(Estado estado) {
+        this.estado = estado;
     }
 
-    public LocalDate getDueDate() {
+    public OffsetDateTime getDueDate() {
         return dueDate;
     }
 
-    public void setDueDate(LocalDate dueDate) {
+    public void setDueDate(OffsetDateTime dueDate) {
         this.dueDate = dueDate;
     }
 
