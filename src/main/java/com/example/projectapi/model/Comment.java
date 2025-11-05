@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "comments")
+@Table(name = "comentarios")
 public class Comment {
 
     @Id
@@ -14,23 +14,21 @@ public class Comment {
     // Relación con la tarea
     @ManyToOne
     @JoinColumn(
-            name = "task_id",
-            referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "comments_task_id_fkey")
+            name = "id_tarea",
+            foreignKey = @ForeignKey(name = "fk_comentarios_tarea")
     )
     private Task task;
 
     // Relación con el usuario que hizo el comentario
     @ManyToOne
     @JoinColumn(
-            name = "user_id",
-            referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "comments_user_id_fkey")
+            name = "id_usuario",
+            foreignKey = @ForeignKey(name = "fk_comentarios_usuario")
     )
     private User user;
 
     @Column(nullable = false, columnDefinition = "TEXT")
-    private String content;
+    private String contenido;
 
     @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now()")
     private OffsetDateTime createdAt;
@@ -39,10 +37,10 @@ public class Comment {
     public Comment() {}
 
     // Constructor con parámetros
-    public Comment(Task task, User user, String content, OffsetDateTime createdAt) {
+    public Comment(Task task, User user, String contenido, OffsetDateTime createdAt) {
         this.task = task;
         this.user = user;
-        this.content = content;
+        this.contenido = contenido;
         this.createdAt = createdAt;
     }
 
@@ -71,12 +69,12 @@ public class Comment {
         this.user = user;
     }
 
-    public String getContent() {
-        return content;
+    public String getContenido() {
+        return contenido;
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public void setContenido(String contenido) {
+        this.contenido = contenido;
     }
 
     public OffsetDateTime getCreatedAt() {

@@ -4,19 +4,24 @@ import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "boards", schema = "public")
+@Table(name = "boards",
+        schema = "public",
+        uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"id_proyecto", "nombre"})
+        }
+)
 public class Board {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String name;
+    @Column(nullable = false, length = 150)
+    private String nombre;
 
     // Relación con la tabla "projects"
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id", referencedColumnName = "id")
+    @JoinColumn(name = "id_proyecto", foreignKey = @ForeignKey(name = "fk_boards_proyecto"))
     private Project project;
 
     @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now()")
@@ -25,8 +30,8 @@ public class Board {
     public Board() {
     }
 
-    public Board(String name, Project project) {
-        this.name = name;
+    public Board(String nombre, Project project) {
+        this.nombre = nombre;
         this.project = project;
     }
 
@@ -39,11 +44,11 @@ public class Board {
     }
 
     public String getName() {
-        return name;
+        return nombre;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setName(String nombre) {
+        this.nombre = nombre;
     }
 
     public Project getProject() {

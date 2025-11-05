@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.example.projectapi.util.JsonNodeConverter;
 
+// No corregido
+
 @Entity
 @Table(name = "integrations", schema = "public")
 public class Integration {

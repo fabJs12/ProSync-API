@@ -3,6 +3,8 @@ package com.example.projectapi.model;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
+// No corregido
+
 @Entity
 @Table(name = "reports", schema = "public")
 public class Report {
