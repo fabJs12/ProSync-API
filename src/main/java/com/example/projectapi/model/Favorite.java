@@ -4,25 +4,23 @@ import jakarta.persistence.*;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "favorites", schema = "public")
+@Table(name = "favoritos", schema = "public")
 @IdClass(Favorite.FavoriteId.class)
 public class Favorite {
 
     @Id
     @ManyToOne
     @JoinColumn(
-            name = "user_id",
-            referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "favorites_user_id_fkey")
+            name = "id_usuario",
+            foreignKey = @ForeignKey(name = "fk_favoritos_usuario")
     )
     private User user;
 
     @Id
     @ManyToOne
     @JoinColumn(
-            name = "task_id",
-            referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "favorites_task_id_fkey")
+            name = "id_tarea",
+            foreignKey = @ForeignKey(name = "fk_favoritos_tarea")
     )
     private Task task;
 
