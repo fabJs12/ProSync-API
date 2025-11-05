@@ -6,31 +6,26 @@ import java.util.Set;
 import java.util.HashSet;
 
 @Entity
-@Table(name = "projectos", schema = "public")
+@Table(name = "proyectos", schema = "public")
 public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(name = "nombre", nullable = false, columnDefinition = "TEXT")
     private String name;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "descripcion", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now()")
     private OffsetDateTime createdAt;
-
-    @ManyToOne
-    @JoinColumn(name = "leader_id", referencedColumnName = "id")
-    private User leader;
 
     public Project() {}
 
     public Project(String name, String description, User leader) {
         this.name = name;
         this.description = description;
-        this.leader = leader;
     }
 
     @OneToMany(mappedBy = "proyecto", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -47,7 +42,4 @@ public class Project {
 
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
-
-    public User getLeader() { return leader; }
-    public void setLeader(User leader) { this.leader = leader; }
 }

@@ -29,7 +29,7 @@ public class Task {
     private Estado estado;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "responsible_id")
+    @JoinColumn(name = "responsable_id")
     private User responsible;
 
     @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now()")
