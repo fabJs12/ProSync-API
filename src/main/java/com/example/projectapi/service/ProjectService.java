@@ -3,6 +3,7 @@ package com.example.projectapi.service;
 import com.example.projectapi.model.Project;
 import com.example.projectapi.model.Rol;
 import com.example.projectapi.repository.ProjectRepository;
+import com.example.projectapi.repository.RolRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -10,13 +11,26 @@ import java.util.Optional;
 @Service
 public class ProjectService {
     private final ProjectRepository projectRepository;
+    private final RolRepository rolRepository;
 
-    public ProjectService(ProjectRepository projectRepository) {
+    public ProjectService(ProjectRepository projectRepository, RolRepository rolRepository) {
         this.projectRepository = projectRepository;
+        this.rolRepository = rolRepository;
     }
 
     public List<Project> findAll() {
         return projectRepository.findAll();
+    }
+
+    // Verifica si el usuario es líder de un proyecto
+    public boolean esLider(Integer projectId, Integer userId) {
+        Rol rolLider = rolRepository.findByRol("Lider").orElseThrow(() -> new RuntimeException("Rol Lider no encontrado"));;
+
+        List<Project> proyectosLider = projectRepository
+                .findByUsuariosAsociadosUsuarioIdAndUsuariosAsociadosRol(userId, rolLider);
+
+        // Devuelve true si la lista contiene el proyecto indicado
+        return proyectosLider.stream().anyMatch(p -> p.getId().equals(projectId));
     }
 
     public List<Project> getProyectosUsuario(Integer userId) {

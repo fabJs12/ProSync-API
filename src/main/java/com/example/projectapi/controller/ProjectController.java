@@ -15,9 +15,9 @@ public class ProjectController {
         this.projectService = projectService;
     }
 
-    @GetMapping
-    public List<Project> findAll() {
-        return projectService.findAll();
+    @GetMapping("/usuario/{userId}")
+    public List<Project> getProyectosUsuario(@PathVariable Integer userId) {
+        return projectService.getProyectosUsuario(userId);
     }
 
     @GetMapping("/{id}")
@@ -28,13 +28,19 @@ public class ProjectController {
     }
 
     @PostMapping
-    public Project create(@RequestBody Project project) {
-        return projectService.create(project);
+    public ResponseEntity<Project> create(@RequestBody Project project) {
+        Project created = projectService.create(project);
+        return ResponseEntity.status(201).body(created);
     }
 
     @PutMapping("/{id}")
-    public Project update(@PathVariable Integer id, @RequestBody Project project) {
-        return projectService.update(id, project);
+    public ResponseEntity<Project> update(@PathVariable Integer id, @RequestBody Project project, @RequestParam Integer userId) {
+        if (!projectService.esLider(id, userId)) {
+            return ResponseEntity.status(403).build();
+        }
+
+        Project updated = projectService.update(id, project);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
