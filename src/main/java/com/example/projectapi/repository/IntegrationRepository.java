@@ -9,6 +9,6 @@ import java.util.Optional;
 @Repository
 public interface IntegrationRepository extends JpaRepository<Integration, Integer> {
     List<Integration> findByUserId(Integer userId);
-    Optional<Integration> findByUserIdAndServiceName(Integer userId, String serviceName);
-    List<Integration> findByServiceName(String serviceName);
+    Optional<Integration> findByUserIdAndNombreServicio(Integer userId, String nombreServicio);
+    List<Integration> findByNombreServicio(String nombreServicio);
 }

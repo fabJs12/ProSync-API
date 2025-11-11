@@ -34,32 +34,32 @@ public class IntegrationController {
         return integrationService.findByUserId(userId);
     }
 
-    @GetMapping("/user/{userId}/service/{serviceName}")
-    public ResponseEntity<Integration> findByUserIdAndServiceName(
+    @GetMapping("/user/{userId}/service/{nombreServicio}")
+    public ResponseEntity<Integration> findByUserIdAndNombreServicio(
             @PathVariable Integer userId,
-            @PathVariable String serviceName) {
-        return integrationService.findByUserIdAndServiceName(userId, serviceName)
+            @PathVariable String nombreServicio) {
+        return integrationService.findByUserIdAndNombreServicio(userId, nombreServicio)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/service/{serviceName}")
-    public List<Integration> findByServiceName(@PathVariable String serviceName) {
-        return integrationService.findByServiceName(serviceName);
+    @GetMapping("/service/{nombreServicio}")
+    public List<Integration> findByNombreServicio(@PathVariable String nombreServicio) {
+        return integrationService.findByNombreServicio(nombreServicio);
     }
 
     @PostMapping
     public ResponseEntity<Integration> create(@RequestBody Map<String, Object> request) {
         try {
             Integer userId = (Integer) request.get("userId");
-            String serviceName = (String) request.get("serviceName");
-            JsonNode details = (JsonNode) request.get("details");
+            String nombreServicio = (String) request.get("nombreServicio");
+            JsonNode detalles = (JsonNode) request.get("detalles");
 
-            if (userId == null || serviceName == null || serviceName.trim().isEmpty()) {
+            if (userId == null || nombreServicio == null || nombreServicio.trim().isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
 
-            Integration created = integrationService.create(userId, serviceName, details);
+            Integration created = integrationService.create(userId, nombreServicio, detalles);
             return ResponseEntity.ok(created);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
@@ -70,10 +70,10 @@ public class IntegrationController {
     public ResponseEntity<Integration> update(@PathVariable Integer id,
                                               @RequestBody Map<String, Object> request) {
         try {
-            String serviceName = (String) request.get("serviceName");
-            JsonNode details = (JsonNode) request.get("details");
+            String nombreServicio = (String) request.get("nombreServicio");
+            JsonNode detalles = (JsonNode) request.get("detalles");
 
-            Integration updated = integrationService.update(id, serviceName, details);
+            Integration updated = integrationService.update(id, nombreServicio, detalles);
             return ResponseEntity.ok(updated);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
