@@ -3,39 +3,35 @@ package com.example.projectapi.model;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
-// No corregido
-
 @Entity
-@Table(name = "files")
+@Table(name = "archivos", schema = "public")
 public class File {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // Relación con la tarea asociada
     @ManyToOne
     @JoinColumn(
-            name = "task_id",
-            referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "files_task_id_fkey")
+            name = "id_tarea",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_archivos_tarea")
     )
     private Task task;
 
-    @Column(name = "file_url", nullable = false, columnDefinition = "TEXT")
-    private String fileUrl;
+    @Column(name = "archivo_url", nullable = false, columnDefinition = "TEXT")
+    private String archivoUrl;
 
-    @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now()")
+    @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP")
     private OffsetDateTime createdAt;
 
     // Constructor vacío (obligatorio por JPA)
     public File() {}
 
-    // Constructor con parámetros (opcional)
-    public File(Task task, String fileUrl, OffsetDateTime createdAt) {
+    // Constructor con parámetros
+    public File(Task task, String archivoUrl) {
         this.task = task;
-        this.fileUrl = fileUrl;
-        this.createdAt = createdAt;
+        this.archivoUrl = archivoUrl;
     }
 
     // Getters y Setters
@@ -55,12 +51,12 @@ public class File {
         this.task = task;
     }
 
-    public String getFileUrl() {
-        return fileUrl;
+    public String getArchivoUrl() {
+        return archivoUrl;
     }
 
-    public void setFileUrl(String fileUrl) {
-        this.fileUrl = fileUrl;
+    public void setArchivoUrl(String archivoUrl) {
+        this.archivoUrl = archivoUrl;
     }
 
     public OffsetDateTime getCreatedAt() {

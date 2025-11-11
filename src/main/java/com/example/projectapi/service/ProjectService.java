@@ -18,7 +18,7 @@ public class ProjectService {
         return projectRepository.findAll();
     }
 
-    public Optional<Project> findById(Long id) {
+    public Optional<Project> findById(Integer id) {
         return projectRepository.findById(id);
     }
 
@@ -26,18 +26,17 @@ public class ProjectService {
         return projectRepository.save(project);
     }
 
-    public Project update(Long id, Project upProject) {
+    public Project update(Integer id, Project upProject) {
         return projectRepository.findById(id)
                 .map(existing -> {
                     existing.setName(upProject.getName());
                     existing.setDescription(upProject.getDescription());
-                    existing.setLeader(upProject.getLeader());
                     return projectRepository.save(existing);
                 })
                 .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
     }
 
-    public void delete(Long id) {
+    public void delete(Integer id) {
         projectRepository.deleteById(id);
     }
 }

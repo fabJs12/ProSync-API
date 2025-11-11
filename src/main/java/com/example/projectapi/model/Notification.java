@@ -3,40 +3,47 @@ package com.example.projectapi.model;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
-// No corregido
-
 @Entity
-@Table(name = "notifications", schema = "public")
+@Table(name = "notificaciones", schema = "public")
 public class Notification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // Relaciones con otras tablas
     @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "notifications_user_id_fkey"))
+    @JoinColumn(
+            name = "id_usuario",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_notificaciones_usuario")
+    )
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "task_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "notifications_task_id_fkey"))
+    @JoinColumn(
+            name = "id_tarea",
+            foreignKey = @ForeignKey(name = "fk_notificaciones_tarea")
+    )
     private Task task;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String message;
+    @Column(name = "mensaje", nullable = false, columnDefinition = "TEXT")
+    private String mensaje;
 
-    @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now()")
+    @Column(name = "leida", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
+    private Boolean leida = false;
+
+    @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP")
     private OffsetDateTime createdAt;
 
     // Constructor vacío (obligatorio para JPA)
     public Notification() {}
 
-    // Constructor con parámetros (opcional)
-    public Notification(User user, Task task, String message, OffsetDateTime createdAt) {
+    // Constructor con parámetros
+    public Notification(User user, Task task, String mensaje) {
         this.user = user;
         this.task = task;
-        this.message = message;
-        this.createdAt = createdAt;
+        this.mensaje = mensaje;
+        this.leida = false;
     }
 
     // Getters y setters
@@ -64,12 +71,20 @@ public class Notification {
         this.task = task;
     }
 
-    public String getMessage() {
-        return message;
+    public String getMensaje() {
+        return mensaje;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setMensaje(String mensaje) {
+        this.mensaje = mensaje;
+    }
+
+    public Boolean getLeida() {
+        return leida;
+    }
+
+    public void setLeida(Boolean leida) {
+        this.leida = leida;
     }
 
     public OffsetDateTime getCreatedAt() {

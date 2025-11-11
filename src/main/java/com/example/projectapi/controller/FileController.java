@@ -37,13 +37,13 @@ public class FileController {
     public ResponseEntity<File> create(@RequestBody Map<String, Object> request) {
         try {
             Integer taskId = (Integer) request.get("taskId");
-            String fileUrl = (String) request.get("fileUrl");
+            String archivoUrl = (String) request.get("archivoUrl");
 
-            if (taskId == null || fileUrl == null || fileUrl.trim().isEmpty()) {
+            if (taskId == null || archivoUrl == null || archivoUrl.trim().isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
 
-            File created = fileService.create(taskId, fileUrl);
+            File created = fileService.create(taskId, archivoUrl);
             return ResponseEntity.ok(created);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
@@ -54,12 +54,12 @@ public class FileController {
     public ResponseEntity<File> update(@PathVariable Integer id,
                                        @RequestBody Map<String, String> request) {
         try {
-            String fileUrl = request.get("fileUrl");
-            if (fileUrl == null || fileUrl.trim().isEmpty()) {
+            String archivoUrl = request.get("archivoUrl");
+            if (archivoUrl == null || archivoUrl.trim().isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
 
-            File updated = fileService.update(id, fileUrl);
+            File updated = fileService.update(id, archivoUrl);
             return ResponseEntity.ok(updated);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();

@@ -30,21 +30,21 @@ public class FileService {
         return fileRepository.findByTaskIdOrderByCreatedAtDesc(taskId);
     }
 
-    public File create(Integer taskId, String fileUrl) {
+    public File create(Integer taskId, String archivoUrl) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
 
         File file = new File();
         file.setTask(task);
-        file.setFileUrl(fileUrl);
+        file.setArchivoUrl(archivoUrl);
 
         return fileRepository.save(file);
     }
 
-    public File update(Integer id, String fileUrl) {
+    public File update(Integer id, String archivoUrl) {
         return fileRepository.findById(id)
                 .map(existing -> {
-                    existing.setFileUrl(fileUrl);
+                    existing.setArchivoUrl(archivoUrl);
                     return fileRepository.save(existing);
                 })
                 .orElseThrow(() -> new RuntimeException("Archivo no encontrado"));

@@ -32,41 +32,41 @@ public class IntegrationService {
         return integrationRepository.findByUserId(userId);
     }
 
-    public Optional<Integration> findByUserIdAndServiceName(Integer userId, String serviceName) {
-        return integrationRepository.findByUserIdAndServiceName(userId, serviceName);
+    public Optional<Integration> findByUserIdAndNombreServicio(Integer userId, String nombreServicio) {
+        return integrationRepository.findByUserIdAndNombreServicio(userId, nombreServicio);
     }
 
-    public List<Integration> findByServiceName(String serviceName) {
-        return integrationRepository.findByServiceName(serviceName);
+    public List<Integration> findByNombreServicio(String nombreServicio) {
+        return integrationRepository.findByNombreServicio(nombreServicio);
     }
 
-    public Integration create(Integer userId, String serviceName, JsonNode details) {
+    public Integration create(Integer userId, String nombreServicio, JsonNode detalles) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         // Verificar si ya existe una integración para este usuario y servicio
         Optional<Integration> existing = integrationRepository
-                .findByUserIdAndServiceName(userId, serviceName);
+                .findByUserIdAndNombreServicio(userId, nombreServicio);
         if (existing.isPresent()) {
             throw new RuntimeException("Ya existe una integración para este usuario y servicio");
         }
 
         Integration integration = new Integration();
         integration.setUser(user);
-        integration.setServiceName(serviceName);
-        integration.setDetails(details);
+        integration.setNombreServicio(nombreServicio);
+        integration.setDetalles(detalles);
 
         return integrationRepository.save(integration);
     }
 
-    public Integration update(Integer id, String serviceName, JsonNode details) {
+    public Integration update(Integer id, String nombreServicio, JsonNode detalles) {
         return integrationRepository.findById(id)
                 .map(existing -> {
-                    if (serviceName != null && !serviceName.trim().isEmpty()) {
-                        existing.setServiceName(serviceName);
+                    if (nombreServicio != null && !nombreServicio.trim().isEmpty()) {
+                        existing.setNombreServicio(nombreServicio);
                     }
-                    if (details != null) {
-                        existing.setDetails(details);
+                    if (detalles != null) {
+                        existing.setDetalles(detalles);
                     }
                     return integrationRepository.save(existing);
                 })

@@ -43,13 +43,13 @@ public class NotificationController {
         try {
             Integer userId = (Integer) request.get("userId");
             Integer taskId = (Integer) request.get("taskId");
-            String message = (String) request.get("message");
+            String mensaje = (String) request.get("mensaje");
 
-            if (userId == null || taskId == null || message == null || message.trim().isEmpty()) {
+            if (userId == null || taskId == null || mensaje == null || mensaje.trim().isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
 
-            Notification created = notificationService.create(userId, taskId, message);
+            Notification created = notificationService.create(userId, taskId, mensaje);
             return ResponseEntity.ok(created);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
@@ -60,12 +60,32 @@ public class NotificationController {
     public ResponseEntity<Notification> update(@PathVariable Integer id,
                                                @RequestBody Map<String, String> request) {
         try {
-            String message = request.get("message");
-            if (message == null || message.trim().isEmpty()) {
+            String mensaje = request.get("mensaje");
+            if (mensaje == null || mensaje.trim().isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
 
-            Notification updated = notificationService.update(id, message);
+            Notification updated = notificationService.update(id, mensaje);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PatchMapping("/{id}/read")
+    public ResponseEntity<Notification> markAsRead(@PathVariable Integer id) {
+        try {
+            Notification updated = notificationService.markAsRead(id);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PatchMapping("/{id}/unread")
+    public ResponseEntity<Notification> markAsUnread(@PathVariable Integer id) {
+        try {
+            Notification updated = notificationService.markAsUnread(id);
             return ResponseEntity.ok(updated);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();

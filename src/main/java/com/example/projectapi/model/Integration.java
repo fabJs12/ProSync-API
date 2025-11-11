@@ -4,10 +4,15 @@ import jakarta.persistence.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.example.projectapi.util.JsonNodeConverter;
 
-// No corregido
-
 @Entity
-@Table(name = "integrations", schema = "public")
+@Table(name = "integraciones",
+        schema = "public",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "integraciones_id_usuario_nombre_servicio_key",
+                        columnNames = {"id_usuario", "nombre_servicio"}
+                )
+        })
 public class Integration {
 
     @Id
@@ -15,25 +20,60 @@ public class Integration {
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(
+            name = "id_usuario",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_integraciones_usuario")
+    )
     private User user;
 
-    @Column(name = "service_name", nullable = false)
-    private String serviceName;
+    @Column(name = "nombre_servicio", nullable = false, length = 100)
+    private String nombreServicio;
 
     @Convert(converter = JsonNodeConverter.class)
-    @Column(columnDefinition = "jsonb")
-    private JsonNode details;
+    @Column(name = "detalles", columnDefinition = "jsonb")
+    private JsonNode detalles;
 
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    // Constructor vacío
+    public Integration() {}
 
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
+    // Constructor con parámetros
+    public Integration(User user, String nombreServicio, JsonNode detalles) {
+        this.user = user;
+        this.nombreServicio = nombreServicio;
+        this.detalles = detalles;
+    }
 
-    public String getServiceName() { return serviceName; }
-    public void setServiceName(String serviceName) { this.serviceName = serviceName; }
+    // Getters y Setters
+    public Integer getId() {
+        return id;
+    }
 
-    public JsonNode getDetails() { return details; }
-    public void setDetails(JsonNode details) { this.details = details; }
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public String getNombreServicio() {
+        return nombreServicio;
+    }
+
+    public void setNombreServicio(String nombreServicio) {
+        this.nombreServicio = nombreServicio;
+    }
+
+    public JsonNode getDetalles() {
+        return detalles;
+    }
+
+    public void setDetalles(JsonNode detalles) {
+        this.detalles = detalles;
+    }
 }

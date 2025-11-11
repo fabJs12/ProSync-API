@@ -40,7 +40,7 @@ public class NotificationService {
         return notificationRepository.findByTaskId(taskId);
     }
 
-    public Notification create(Integer userId, Integer taskId, String message) {
+    public Notification create(Integer userId, Integer taskId, String mensaje) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
@@ -50,15 +50,34 @@ public class NotificationService {
         Notification notification = new Notification();
         notification.setUser(user);
         notification.setTask(task);
-        notification.setMessage(message);
+        notification.setMensaje(mensaje);
+        notification.setLeida(false);
 
         return notificationRepository.save(notification);
     }
 
-    public Notification update(Integer id, String message) {
+    public Notification update(Integer id, String mensaje) {
         return notificationRepository.findById(id)
                 .map(existing -> {
-                    existing.setMessage(message);
+                    existing.setMensaje(mensaje);
+                    return notificationRepository.save(existing);
+                })
+                .orElseThrow(() -> new RuntimeException("Notificación no encontrada"));
+    }
+
+    public Notification markAsRead(Integer id) {
+        return notificationRepository.findById(id)
+                .map(existing -> {
+                    existing.setLeida(true);
+                    return notificationRepository.save(existing);
+                })
+                .orElseThrow(() -> new RuntimeException("Notificación no encontrada"));
+    }
+
+    public Notification markAsUnread(Integer id) {
+        return notificationRepository.findById(id)
+                .map(existing -> {
+                    existing.setLeida(false);
                     return notificationRepository.save(existing);
                 })
                 .orElseThrow(() -> new RuntimeException("Notificación no encontrada"));
