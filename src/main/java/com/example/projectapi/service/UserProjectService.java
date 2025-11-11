@@ -54,7 +54,7 @@ public class UserProjectService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        Project project = projectRepository.findById(projectId.longValue())
+        Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
 
         Rol rol = rolRepository.findById(rolId)

@@ -21,7 +21,7 @@ public class ProjectController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Project> findById(@PathVariable long id) {
+    public ResponseEntity<Project> findById(@PathVariable Integer id) {
         return projectService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -33,12 +33,12 @@ public class ProjectController {
     }
 
     @PutMapping("/{id}")
-    public Project update(@PathVariable long id, @RequestBody Project project) {
+    public Project update(@PathVariable Integer id, @RequestBody Project project) {
         return projectService.update(id, project);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable long id) {
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
         projectService.delete(id);
         return ResponseEntity.noContent().build();
     }
