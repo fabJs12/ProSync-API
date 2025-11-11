@@ -1,6 +1,7 @@
 package com.example.projectapi.service;
 
 import com.example.projectapi.model.Project;
+import com.example.projectapi.model.Rol;
 import com.example.projectapi.repository.ProjectRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -17,6 +18,14 @@ public class ProjectService {
     public List<Project> findAll() {
         return projectRepository.findAll();
     }
+
+    public List<Project> getProyectosUsuario(Integer userId) {
+        return projectRepository.findByUsuariosAsociadosUsuarioId(userId);
+    }
+
+    public List<Project> getProyectosUsuarioEsLider(Integer userId, Rol rolLider) { return projectRepository.findByUsuariosAsociadosUsuarioIdAndUsuariosAsociadosRol(userId, rolLider); }
+
+    public List<Project> getProyectosUsuarioEsMiembro(Integer userId, Rol rolMiembro) { return projectRepository.findByUsuariosAsociadosUsuarioIdAndUsuariosAsociadosRol(userId, rolMiembro); }
 
     public Optional<Project> findById(Integer id) {
         return projectRepository.findById(id);
