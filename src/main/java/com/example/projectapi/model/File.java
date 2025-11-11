@@ -11,7 +11,7 @@ public class File {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     // Relación con la tarea asociada
     @ManyToOne
@@ -39,11 +39,11 @@ public class File {
     }
 
     // Getters y Setters
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

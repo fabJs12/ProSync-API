@@ -1,4 +1,4 @@
 package com.example.projectapi.repository;
 
-public class TaskRepository {
+public interface TaskRepository {
 }
