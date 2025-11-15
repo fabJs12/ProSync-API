@@ -8,6 +8,7 @@ import com.example.projectapi.repository.ProjectRepository;
 import com.example.projectapi.repository.RolRepository;
 import com.example.projectapi.repository.UserProjectRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +31,8 @@ public class ProjectService {
 
     // Verifica si el usuario es líder de un proyecto
     public boolean esLider(Integer projectId, Integer userId) {
-        Rol rolLider = rolRepository.findByRol("Lider").orElseThrow(() -> new RuntimeException("Rol Lider no encontrado"));;
+        Rol rolLider = rolRepository.findByRol("Lider")
+                .orElseThrow(() -> new RuntimeException("Rol Lider no encontrado"));;
 
         List<Project> proyectosLider = projectRepository
                 .findByUsuariosAsociadosUsuarioIdAndUsuariosAsociadosRol(userId, rolLider);
@@ -52,18 +54,16 @@ public class ProjectService {
     }
 
     public Project create(Project project, User user, Rol rolLider) {
+        if (project.getName() == null || project.getName().isEmpty()) {
+            throw new RuntimeException("El proyecto debe tener un nombre");
+        }
+
         Project created = projectRepository.save(project);
 
-        if (rolLider == null) throw new RuntimeException("El proyecto debe tener un líder");
-
-        if (project.getName() == null || project.getName().isEmpty()) throw new RuntimeException("El proyecto debe tener un nombre");
-
         UserProject userProject = new UserProject(user, created, rolLider);
-
         userProjectRepository.save(userProject);
 
         return created;
-
     }
 
     public Project update(Integer id, Project upProject) {
@@ -76,6 +76,7 @@ public class ProjectService {
                 .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
     }
 
+    @Transactional // si algo no se concreta, se cancela la acción
     public void delete(Integer id) {
         Project project = projectRepository.findById(id)
                         .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));

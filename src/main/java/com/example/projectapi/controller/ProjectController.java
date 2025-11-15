@@ -9,6 +9,7 @@ import com.example.projectapi.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -24,7 +25,7 @@ public class ProjectController {
         this.rolService = rolService;
     }
 
-    @GetMapping("/litar")
+    @GetMapping("/listar")
     public ResponseEntity<List<Project>> getProyectosUsuario(Authentication authentication) {
         String username = authentication.getName();
         User user = userService.findByUsername(username)
@@ -75,7 +76,7 @@ public class ProjectController {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         if(!projectService.esLider(id, user.getId())) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(403).build();
         }
         projectService.delete(id);
         return ResponseEntity.noContent().build();
