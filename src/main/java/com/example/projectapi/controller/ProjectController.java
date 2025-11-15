@@ -23,7 +23,8 @@ public class ProjectController {
     @GetMapping("/proyectos")
     public List<Project> getProyectosUsuario(Authentication authentication) {
         String username = authentication.getName();
-        User user = userService.findByUsername(username);
+        User user = userService.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         return projectService.getProyectosUsuario(user.getId());
     }
 
