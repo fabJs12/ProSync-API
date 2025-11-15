@@ -2,9 +2,13 @@ package com.example.projectapi.service;
 
 import com.example.projectapi.model.Project;
 import com.example.projectapi.model.Rol;
+import com.example.projectapi.model.User;
+import com.example.projectapi.model.UserProject;
 import com.example.projectapi.repository.ProjectRepository;
 import com.example.projectapi.repository.RolRepository;
+import com.example.projectapi.repository.UserProjectRepository;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -12,10 +16,12 @@ import java.util.Optional;
 public class ProjectService {
     private final ProjectRepository projectRepository;
     private final RolRepository rolRepository;
+    private final UserProjectRepository userProjectRepository;
 
-    public ProjectService(ProjectRepository projectRepository, RolRepository rolRepository) {
+    public ProjectService(ProjectRepository projectRepository, RolRepository rolRepository, UserProjectRepository userProjectRepository) {
         this.projectRepository = projectRepository;
         this.rolRepository = rolRepository;
+        this.userProjectRepository = userProjectRepository;
     }
 
     public List<Project> findAll() {
@@ -45,8 +51,19 @@ public class ProjectService {
         return projectRepository.findById(id);
     }
 
-    public Project create(Project project) {
-        return projectRepository.save(project);
+    public Project create(Project project, User user, Rol rolLider) {
+        Project created = projectRepository.save(project);
+
+        if (rolLider == null) throw new RuntimeException("El proyecto debe tener un líder");
+
+        if (project.getName() == null || project.getName().isEmpty()) throw new RuntimeException("El proyecto debe tener un nombre");
+
+        UserProject userProject = new UserProject(user, created, rolLider);
+
+        userProjectRepository.save(userProject);
+
+        return created;
+
     }
 
     public Project update(Integer id, Project upProject) {
@@ -60,6 +77,11 @@ public class ProjectService {
     }
 
     public void delete(Integer id) {
-        projectRepository.deleteById(id);
+        Project project = projectRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
+
+        userProjectRepository.deleteAll(userProjectRepository.findByProyectoId(id));
+
+        projectRepository.delete(project);
     }
 }

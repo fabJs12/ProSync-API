@@ -1,8 +1,10 @@
 package com.example.projectapi.controller;
 
 import com.example.projectapi.model.Project;
+import com.example.projectapi.model.Rol;
 import com.example.projectapi.model.User;
 import com.example.projectapi.service.ProjectService;
+import com.example.projectapi.service.RolService;
 import com.example.projectapi.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -14,18 +16,22 @@ import java.util.List;
 public class ProjectController {
     private final ProjectService projectService;
     private final UserService userService;
+    private final RolService rolService;
 
-    public ProjectController(ProjectService projectService, UserService userService) {
+    public ProjectController(ProjectService projectService, UserService userService, RolService rolService) {
         this.projectService = projectService;
         this.userService = userService;
+        this.rolService = rolService;
     }
 
-    @GetMapping("/proyectos")
-    public List<Project> getProyectosUsuario(Authentication authentication) {
+    @GetMapping("/litar")
+    public ResponseEntity<List<Project>> getProyectosUsuario(Authentication authentication) {
         String username = authentication.getName();
         User user = userService.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        return projectService.getProyectosUsuario(user.getId());
+
+        List<Project> proyectos = projectService.getProyectosUsuario(user.getId());
+        return ResponseEntity.ok(proyectos);
     }
 
     @GetMapping("/{id}")
@@ -35,15 +41,27 @@ public class ProjectController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    public ResponseEntity<Project> create(@RequestBody Project project) {
-        Project created = projectService.create(project);
+    @PostMapping("/crear")
+    public ResponseEntity<Project> create(@RequestBody Project project, Authentication authentication) {
+        User user = userService.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Rol rolLider = rolService.findByRol("Lider")
+                .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+
+        Project created = projectService.create(project, user, rolLider);
+
         return ResponseEntity.status(201).body(created);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Project> update(@PathVariable Integer id, @RequestBody Project project, @RequestParam Integer userId) {
-        if (!projectService.esLider(id, userId)) {
+    public ResponseEntity<Project> update(@PathVariable Integer id, @RequestBody Project project, Authentication authentication) {
+        String username = authentication.getName();
+        User user = userService.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+
+        if (!projectService.esLider(id, user.getId())) {
             return ResponseEntity.status(403).build();
         }
 
@@ -52,8 +70,11 @@ public class ProjectController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        if(projectService.findById(id).isEmpty()) {
+    public ResponseEntity<Void> delete(@PathVariable Integer id, Authentication authentication) {
+        User user = userService.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if(!projectService.esLider(id, user.getId())) {
             return ResponseEntity.notFound().build();
         }
         projectService.delete(id);
