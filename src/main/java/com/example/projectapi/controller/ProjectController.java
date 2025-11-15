@@ -1,8 +1,11 @@
 package com.example.projectapi.controller;
 
 import com.example.projectapi.model.Project;
+import com.example.projectapi.model.User;
 import com.example.projectapi.service.ProjectService;
+import com.example.projectapi.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -10,14 +13,18 @@ import java.util.List;
 @RequestMapping("/api/projects")
 public class ProjectController {
     private final ProjectService projectService;
+    private final UserService userService;
 
-    public ProjectController(ProjectService projectService) {
+    public ProjectController(ProjectService projectService, UserService userService) {
         this.projectService = projectService;
+        this.userService = userService;
     }
 
-    @GetMapping("/usuario/{userId}")
-    public List<Project> getProyectosUsuario(@PathVariable Integer userId) {
-        return projectService.getProyectosUsuario(userId);
+    @GetMapping("/proyectos")
+    public List<Project> getProyectosUsuario(Authentication authentication) {
+        String username = authentication.getName();
+        User user = userService.findByUsername(username);
+        return projectService.getProyectosUsuario(user.getId());
     }
 
     @GetMapping("/{id}")
@@ -45,6 +52,9 @@ public class ProjectController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
+        if(projectService.findById(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         projectService.delete(id);
         return ResponseEntity.noContent().build();
     }

@@ -26,6 +26,10 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
     public User create(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new RuntimeException("El email ya está registrado");
