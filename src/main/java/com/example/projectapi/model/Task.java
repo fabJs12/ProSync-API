@@ -1,5 +1,6 @@
 package com.example.projectapi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
@@ -21,16 +22,19 @@ public class Task {
     private OffsetDateTime dueDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     @JoinColumn(name = "id_board",  nullable = false)
     private Board board;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     @JoinColumn(name = "id_estado", nullable = false)
     private Estado estado;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     @JoinColumn(name = "responsable_id")
-    private User responsible;
+    private User responsable;
 
     @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now()")
     private OffsetDateTime createdAt;
@@ -38,13 +42,13 @@ public class Task {
     public Task() {
     }
 
-    public Task(String title, String description, Estado estado, OffsetDateTime dueDate, Board board, User responsible) {
+    public Task(String title, String description, Estado estado, OffsetDateTime dueDate, Board board, User responsable) {
         this.title = title;
         this.description = description;
         this.estado = estado;
         this.dueDate = dueDate;
         this.board = board;
-        this.responsible = responsible;
+        this.responsable = responsable;
     }
 
     // Getters y setters
@@ -72,11 +76,11 @@ public class Task {
         this.description = description;
     }
 
-    public Estado getStatus() {
+    public Estado getEstado() {
         return estado;
     }
 
-    public void setStatus(Estado estado) {
+    public void setEstado(Estado estado) {
         this.estado = estado;
     }
 
@@ -96,12 +100,12 @@ public class Task {
         this.board = board;
     }
 
-    public User getResponsible() {
-        return responsible;
+    public User getResponsable() {
+        return responsable;
     }
 
-    public void setResponsible(User responsible) {
-        this.responsible = responsible;
+    public void setResponsable(User responsible) {
+        this.responsable = responsible;
     }
 
     public OffsetDateTime getCreatedAt() {

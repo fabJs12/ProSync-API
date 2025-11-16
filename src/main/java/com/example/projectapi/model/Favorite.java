@@ -52,15 +52,16 @@ public class Favorite {
 
     // Clase interna para la clave compuesta
     public static class FavoriteId implements Serializable {
-        private Long user;
-        private Long task;
+        private Integer user;
+        private Integer task;
 
         public FavoriteId() {}
 
-        public FavoriteId(Long user, Long task) {
+        public FavoriteId(Integer user, Integer task) {
             this.user = user;
             this.task = task;
         }
+
 
         // equals() y hashCode() son obligatorios para IdClass
         @Override

@@ -3,18 +3,16 @@ package com.example.projectapi.controller;
 import com.example.projectapi.model.Board;
 import com.example.projectapi.model.Project;
 import com.example.projectapi.model.User;
-import com.example.projectapi.repository.BoardRepository;
 import com.example.projectapi.service.BoardService;
 import com.example.projectapi.service.ProjectService;
 import com.example.projectapi.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Controller
+@RestController
 @RequestMapping("/api/boards")
 public class BoardController {
 
