@@ -36,6 +36,14 @@ public class TaskService {
         return taskRepository.findById(id);
     }
 
+    public List<Task> findByEstado(Integer estadoId) {
+        return taskRepository.findByEstadoId(estadoId);
+    }
+
+    public List<Task> findByResponsable(Integer responsableId) {
+        return taskRepository.findByResponsableId(responsableId);
+    }
+
     public Task create(Task task, Integer boardId, Integer estadoId, Integer responsableId) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new RuntimeException("Board no encontrado"));

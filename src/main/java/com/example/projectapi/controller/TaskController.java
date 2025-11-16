@@ -41,6 +41,16 @@ public class TaskController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/estado/{estadoId}")
+    public ResponseEntity<List<Task>> getTasksByEstado(@PathVariable Integer estadoId) {
+        return ResponseEntity.ok(taskService.findByEstado(estadoId));
+    }
+
+    @GetMapping("/responsable/{responsableId}")
+    public ResponseEntity<List<Task>> getTasksByResponsable(@PathVariable Integer responsableId) {
+        return ResponseEntity.ok(taskService.findByResponsable(responsableId));
+    }
+
     @PostMapping("/board/{boardId}")
     public ResponseEntity<Task> create(
             @PathVariable Integer boardId,
