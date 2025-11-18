@@ -46,6 +46,10 @@ public class UserProjectService {
         return userProjectRepository.findByProyectoId(projectId);
     }
 
+    public boolean usuarioTieneRelacion(Integer userId, Integer projectId) {
+        return userProjectRepository.existsById(new UserProjectId(userId, projectId));
+    }
+
     public List<UserProject> findByRolId(Integer rolId) {
         return userProjectRepository.findByRolId(rolId);
     }
