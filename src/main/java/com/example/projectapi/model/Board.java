@@ -22,8 +22,8 @@ public class Board {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, length = 150)
-    private String nombre;
+    @Column(name = "nombre", nullable = false, length = 150)
+    private String name;
 
     // Relación con la tabla "projects"
     @ManyToOne(fetch = FetchType.LAZY)
@@ -33,8 +33,8 @@ public class Board {
     @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now()")
     private OffsetDateTime createdAt;
 
-    public Board(String nombre, Project project) {
-        this.nombre = nombre;
+    public Board(String name, Project project) {
+        this.name = name;
         this.project = project;
     }
 }
