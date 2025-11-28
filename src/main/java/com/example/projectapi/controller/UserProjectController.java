@@ -1,5 +1,6 @@
 package com.example.projectapi.controller;
 
+import com.example.projectapi.dto.CreateUserProjectDTO;
 import com.example.projectapi.model.UserProject;
 import com.example.projectapi.model.UserProjectId;
 import com.example.projectapi.service.UserProjectService;
@@ -47,18 +48,21 @@ public class UserProjectController {
     }
 
     @PostMapping
-    public ResponseEntity<UserProject> create(@RequestBody Map<String, Integer> request) {
+    public ResponseEntity<UserProject> create(@RequestBody CreateUserProjectDTO dto) {
         try {
-            Integer userId = request.get("userId");
-            Integer projectId = request.get("projectId");
-            Integer rolId = request.get("rolId");
 
-            if (userId == null || projectId == null || rolId == null) {
+            if (dto.getUserId() == null || dto.getProjectId() == null || dto.getRolId() == null) {
                 return ResponseEntity.badRequest().build();
             }
 
-            UserProject created = userProjectService.create(userId, projectId, rolId);
+            UserProject created = userProjectService.create(
+                    dto.getUserId(),
+                    dto.getProjectId(),
+                    dto.getRolId()
+            );
+
             return ResponseEntity.ok(created);
+
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
