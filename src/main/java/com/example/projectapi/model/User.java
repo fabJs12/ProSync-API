@@ -1,5 +1,6 @@
 package com.example.projectapi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,5 +39,6 @@ public class User {
     }
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private Set<UserProject> proyectosAsociados = new HashSet<>();
 }

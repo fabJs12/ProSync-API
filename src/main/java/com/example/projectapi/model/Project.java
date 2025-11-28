@@ -1,5 +1,6 @@
 package com.example.projectapi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,6 +31,7 @@ public class Project {
     private OffsetDateTime createdAt;
 
     @OneToMany(mappedBy = "proyecto", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private Set<UserProject> usuariosAsociados = new HashSet<>();
 
     public Project(String name, String description) {

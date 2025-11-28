@@ -64,6 +64,7 @@ public class UserProjectController {
             return ResponseEntity.ok(created);
 
         } catch (RuntimeException e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }

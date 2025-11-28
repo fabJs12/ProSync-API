@@ -1,5 +1,6 @@
 package com.example.projectapi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,15 +17,18 @@ public class UserProject{
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("idUsuario")
     @JoinColumn(name = "id_usuario")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private User usuario;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("idProyecto")
     @JoinColumn(name = "id_proyecto")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Project proyecto;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_rol", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Rol rol;
 
     public UserProject(User usuario, Project proyecto, Rol rol) {
