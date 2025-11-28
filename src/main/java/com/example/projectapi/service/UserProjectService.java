@@ -69,6 +69,11 @@ public class UserProjectService {
             throw new RuntimeException("El usuario ya está asignado a este proyecto");
         }
 
+        Optional<Project> duplicado = projectRepository.findByUsuarioIdAndNombre(userId, project.getName());
+        if (duplicado.isPresent() && !duplicado.get().getId().equals(projectId)) {
+            throw new RuntimeException("El usuario ya tiene un proyecto con este nombre");
+        }
+
         UserProject userProject = new UserProject(user, project, rol);
         return userProjectRepository.save(userProject);
     }
