@@ -3,6 +3,9 @@ package com.example.projectapi.model;
 import jakarta.persistence.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.example.projectapi.util.JsonNodeConverter;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "integraciones",
@@ -13,6 +16,8 @@ import com.example.projectapi.util.JsonNodeConverter;
                         columnNames = {"id_usuario", "nombre_servicio"}
                 )
         })
+@Getter @Setter
+@NoArgsConstructor
 public class Integration {
 
     @Id
@@ -34,46 +39,10 @@ public class Integration {
     @Column(name = "detalles", columnDefinition = "jsonb")
     private JsonNode detalles;
 
-    // Constructor vacío
-    public Integration() {}
-
     // Constructor con parámetros
     public Integration(User user, String nombreServicio, JsonNode detalles) {
         this.user = user;
         this.nombreServicio = nombreServicio;
-        this.detalles = detalles;
-    }
-
-    // Getters y Setters
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public String getNombreServicio() {
-        return nombreServicio;
-    }
-
-    public void setNombreServicio(String nombreServicio) {
-        this.nombreServicio = nombreServicio;
-    }
-
-    public JsonNode getDetalles() {
-        return detalles;
-    }
-
-    public void setDetalles(JsonNode detalles) {
         this.detalles = detalles;
     }
 }

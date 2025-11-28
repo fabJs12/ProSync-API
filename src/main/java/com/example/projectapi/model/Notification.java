@@ -1,10 +1,16 @@
 package com.example.projectapi.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "notificaciones", schema = "public")
+@Getter @Setter
+@NoArgsConstructor
 public class Notification {
 
     @Id
@@ -35,63 +41,11 @@ public class Notification {
     @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP")
     private OffsetDateTime createdAt;
 
-    // Constructor vacío (obligatorio para JPA)
-    public Notification() {}
-
     // Constructor con parámetros
     public Notification(User user, Task task, String mensaje) {
         this.user = user;
         this.task = task;
         this.mensaje = mensaje;
         this.leida = false;
-    }
-
-    // Getters y setters
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Task getTask() {
-        return task;
-    }
-
-    public void setTask(Task task) {
-        this.task = task;
-    }
-
-    public String getMensaje() {
-        return mensaje;
-    }
-
-    public void setMensaje(String mensaje) {
-        this.mensaje = mensaje;
-    }
-
-    public Boolean getLeida() {
-        return leida;
-    }
-
-    public void setLeida(Boolean leida) {
-        this.leida = leida;
-    }
-
-    public OffsetDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(OffsetDateTime createdAt) {
-        this.createdAt = createdAt;
     }
 }

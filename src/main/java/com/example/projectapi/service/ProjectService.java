@@ -29,7 +29,6 @@ public class ProjectService {
         return projectRepository.findAll();
     }
 
-    // Verifica si el usuario es líder de un proyecto
     public boolean esLider(Integer projectId, Integer userId) {
         Rol rolLider = rolRepository.findByRol("Lider")
                 .orElseThrow(() -> new RuntimeException("Rol Lider no encontrado"));;
@@ -37,7 +36,6 @@ public class ProjectService {
         List<Project> proyectosLider = projectRepository
                 .findByUsuariosAsociadosUsuarioIdAndUsuariosAsociadosRol(userId, rolLider);
 
-        // Devuelve true si la lista contiene el proyecto indicado
         return proyectosLider.stream().anyMatch(p -> p.getId().equals(projectId));
     }
 
@@ -45,17 +43,26 @@ public class ProjectService {
         return projectRepository.findByUsuariosAsociadosUsuarioId(userId);
     }
 
-    public List<Project> getProyectosUsuarioEsLider(Integer userId, Rol rolLider) { return projectRepository.findByUsuariosAsociadosUsuarioIdAndUsuariosAsociadosRol(userId, rolLider); }
+    public List<Project> getProyectosUsuarioEsLider(Integer userId, Rol rolLider) { 
+        return projectRepository.findByUsuariosAsociadosUsuarioIdAndUsuariosAsociadosRol(userId, rolLider); 
+    }
 
-    public List<Project> getProyectosUsuarioEsMiembro(Integer userId, Rol rolMiembro) { return projectRepository.findByUsuariosAsociadosUsuarioIdAndUsuariosAsociadosRol(userId, rolMiembro); }
+    public List<Project> getProyectosUsuarioEsMiembro(Integer userId, Rol rolMiembro) { 
+        return projectRepository.findByUsuariosAsociadosUsuarioIdAndUsuariosAsociadosRol(userId, rolMiembro); 
+    }
 
     public Optional<Project> findById(Integer id) {
         return projectRepository.findById(id);
     }
 
     public Project create(Project project, User user, Rol rolLider) {
-        if (project.getName() == null || project.getName().isEmpty()) {
+        if (project.getName() == null || project.getName().trim().isEmpty()) {
             throw new RuntimeException("El proyecto debe tener un nombre");
+        }
+
+        Optional<Project> existingProject = projectRepository.findByUsuarioIdAndNombre(user.getId(), project.getName());
+        if (existingProject.isPresent()) {
+            throw new RuntimeException("Ya tienes un proyecto con este nombre");
         }
 
         Project created = projectRepository.save(project);
@@ -69,6 +76,19 @@ public class ProjectService {
     public Project update(Integer id, Project upProject) {
         return projectRepository.findById(id)
                 .map(existing -> {
+                    if (!existing.getName().equalsIgnoreCase(upProject.getName())) {
+                        List<UserProject> members = userProjectRepository.findByProyectoId(id);
+                        for (UserProject up : members) {
+                            Optional<Project> duplicado = projectRepository.findByUsuarioIdAndNombre(
+                                up.getUsuario().getId(), 
+                                upProject.getName()
+                            );
+                            if (duplicado.isPresent() && !duplicado.get().getId().equals(id)) {
+                                throw new RuntimeException("Ya existe un proyecto con este nombre para uno de los miembros");
+                            }
+                        }
+                    }
+                    
                     existing.setName(upProject.getName());
                     existing.setDescription(upProject.getDescription());
                     return projectRepository.save(existing);
@@ -76,7 +96,7 @@ public class ProjectService {
                 .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
     }
 
-    @Transactional // si algo no se concreta, se cancela la acción
+    @Transactional
     public void delete(Integer id) {
         Project project = projectRepository.findById(id)
                         .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));

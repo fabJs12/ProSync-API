@@ -1,5 +1,6 @@
 package com.example.projectapi.controller;
 
+import com.example.projectapi.dto.TaskDTO;
 import com.example.projectapi.model.Board;
 import com.example.projectapi.model.Task;
 import com.example.projectapi.model.User;
@@ -30,29 +31,36 @@ public class TaskController {
     }
 
     @GetMapping("/board/{boardId}")
-    public ResponseEntity<List<Task>> getTasksByBoard(@PathVariable Integer boardId) {
-        return ResponseEntity.ok(taskService.findByBoard(boardId));
+    public ResponseEntity<List<TaskDTO>> getTasksByBoard(@PathVariable Integer boardId) {
+        return ResponseEntity.ok(taskService.findByBoardDTO(boardId));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Task> getTaskById(@PathVariable Integer id) {
-        return taskService.findById(id)
+    public ResponseEntity<TaskDTO> getTaskById(@PathVariable Integer id) {
+        return taskService.findByIdDTO(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/estado/{estadoId}")
-    public ResponseEntity<List<Task>> getTasksByEstado(@PathVariable Integer estadoId) {
-        return ResponseEntity.ok(taskService.findByEstado(estadoId));
+    public ResponseEntity<List<TaskDTO>> getTasksByEstado(@PathVariable Integer estadoId) {
+        return ResponseEntity.ok(taskService.findByEstadoDTO(estadoId));
     }
 
     @GetMapping("/responsable/{responsableId}")
-    public ResponseEntity<List<Task>> getTasksByResponsable(@PathVariable Integer responsableId) {
-        return ResponseEntity.ok(taskService.findByResponsable(responsableId));
+    public ResponseEntity<List<TaskDTO>> getTasksByResponsable(@PathVariable Integer responsableId) {
+        return ResponseEntity.ok(taskService.findByResponsableDTO(responsableId));
+    }
+
+    @GetMapping("/usuario")
+    public ResponseEntity<List<TaskDTO>> getTasksByUsuario(Authentication authentication) {
+        User user = userService.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        return ResponseEntity.ok(taskService.findByUsuarioDTO(user.getId()));
     }
 
     @PostMapping("/board/{boardId}")
-    public ResponseEntity<Task> create(
+    public ResponseEntity<TaskDTO> create(
             @PathVariable Integer boardId,
             @RequestParam Integer estadoId,
             @RequestParam(required = false) Integer responsableId,
@@ -71,13 +79,13 @@ public class TaskController {
             return ResponseEntity.status(403).build();
         }
 
-        Task created = taskService.create(task, boardId, estadoId, responsableId);
+        TaskDTO created = taskService.createDTO(task, boardId, estadoId, responsableId);
 
         return ResponseEntity.status(201).body(created);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Task> update(@PathVariable Integer id, @RequestBody Task updatedTask, Authentication authentication) {
+    public ResponseEntity<TaskDTO> update(@PathVariable Integer id, @RequestBody Task updatedTask, Authentication authentication) {
         Task task = taskService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tarea no encontrado"));
 
@@ -93,7 +101,7 @@ public class TaskController {
             return ResponseEntity.status(403).build();
         }
 
-        Task updated = taskService.update(id, updatedTask);
+        TaskDTO updated = taskService.updateDTO(id, updatedTask);
 
         return ResponseEntity.ok(updated);
     }

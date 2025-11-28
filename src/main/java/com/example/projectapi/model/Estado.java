@@ -1,9 +1,16 @@
 package com.example.projectapi.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "estados", schema = "public")
+@Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Estado {
 
     @Id
@@ -12,28 +19,4 @@ public class Estado {
 
     @Column(nullable = false, length = 100)
     private String estado;
-
-    public Estado() {
-    }
-
-    public Estado(Integer id, String estado) {
-        this.id = id;
-        this.estado = estado;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getEstado() {
-        return estado;
-    }
-
-    public void setEstado(String estado) {
-        this.estado = estado;
-    }
 }

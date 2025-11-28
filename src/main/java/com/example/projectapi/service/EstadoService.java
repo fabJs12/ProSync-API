@@ -24,6 +24,25 @@ public class EstadoService {
     }
 
     public Estado create(Estado estado) {
+        if (estado.getEstado() == null || estado.getEstado().trim().isEmpty()) {
+            throw new RuntimeException("El nombre del estado es requerido");
+        }
         return estadoRepository.save(estado);
+    }
+
+    public Estado update(Integer id, Estado updatedEstado) {
+        return estadoRepository.findById(id)
+                .map(existing -> {
+                    existing.setEstado(updatedEstado.getEstado());
+                    return estadoRepository.save(existing);
+                })
+                .orElseThrow(() -> new RuntimeException("Estado no encontrado"));
+    }
+
+    public void delete(Integer id) {
+        if (!estadoRepository.existsById(id)) {
+            throw new RuntimeException("Estado no encontrado");
+        }
+        estadoRepository.deleteById(id);
     }
 }

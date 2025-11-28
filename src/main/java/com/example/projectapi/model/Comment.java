@@ -1,10 +1,16 @@
 package com.example.projectapi.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "comentarios")
+@Getter @Setter
+@NoArgsConstructor
 public class Comment {
 
     @Id
@@ -33,55 +39,11 @@ public class Comment {
     @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now()")
     private OffsetDateTime createdAt;
 
-    // Constructor vacío obligatorio
-    public Comment() {}
-
     // Constructor con parámetros
     public Comment(Task task, User user, String contenido, OffsetDateTime createdAt) {
         this.task = task;
         this.user = user;
         this.contenido = contenido;
-        this.createdAt = createdAt;
-    }
-
-    // Getters y Setters
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Task getTask() {
-        return task;
-    }
-
-    public void setTask(Task task) {
-        this.task = task;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public String getContenido() {
-        return contenido;
-    }
-
-    public void setContenido(String contenido) {
-        this.contenido = contenido;
-    }
-
-    public OffsetDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(OffsetDateTime createdAt) {
         this.createdAt = createdAt;
     }
 }

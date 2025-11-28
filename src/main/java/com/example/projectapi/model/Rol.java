@@ -1,10 +1,16 @@
 package com.example.projectapi.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.util.Objects;
 
 @Entity
 @Table(name = "roles")
+@Getter @Setter
+@NoArgsConstructor
 public class Rol {
 
     @Id
@@ -14,26 +20,7 @@ public class Rol {
     @Column(name = "rol", nullable = false, unique = true)
     private String rol;
 
-    public Rol() {
-    }
-
     public Rol(String rol) {
-        this.rol = rol;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getRol() {
-        return rol;
-    }
-
-    public void setRol(String rol) {
         this.rol = rol;
     }
 

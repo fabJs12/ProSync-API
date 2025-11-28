@@ -1,8 +1,6 @@
 package com.example.projectapi.model;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.OffsetDateTime;
 import java.util.Set;
 import java.util.HashSet;
@@ -20,7 +18,6 @@ public class Project {
     @Column(name = "descripcion", columnDefinition = "TEXT")
     private String description;
 
-    @CreationTimestamp
     @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now()")
     private OffsetDateTime createdAt;
 
