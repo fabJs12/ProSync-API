@@ -34,6 +34,13 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/username/{username}")
+    public ResponseEntity<User> findByUsername(@PathVariable String username) {
+        return userService.findByUsername(username)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PostMapping
     public ResponseEntity<User> create(@RequestBody User user) {
         try {
@@ -67,5 +74,10 @@ public class UserController {
     @GetMapping("/exists/email/{email}")
     public ResponseEntity<Boolean> existsByEmail(@PathVariable String email) {
         return ResponseEntity.ok(userService.existsByEmail(email));
+    }
+
+    @GetMapping("/exists/username/{username}")
+    public ResponseEntity<Boolean> existsByUsername(@PathVariable String username) {
+        return ResponseEntity.ok(userService.existsByUsername(username));
     }
 }
