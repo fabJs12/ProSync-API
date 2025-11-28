@@ -1,13 +1,22 @@
-package com.example.projectapi.model;
+package com.example.projectapi.model; // Asegúrate que el package sea el correcto
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+
 import java.time.OffsetDateTime;
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "proyectos", schema = "public")
+@Getter @Setter
+@NoArgsConstructor
 public class Project {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -18,28 +27,16 @@ public class Project {
     @Column(name = "descripcion", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now()")
+    @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now()", updatable = false)
+    @CreationTimestamp
     private OffsetDateTime createdAt;
 
-    public Project() {}
+    @OneToMany(mappedBy = "proyecto", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private Set<UserProject> usuariosAsociados = new HashSet<>();
 
     public Project(String name, String description) {
         this.name = name;
         this.description = description;
     }
-
-    @OneToMany(mappedBy = "proyecto", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<UserProject> usuariosAsociados = new HashSet<>();
-
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public OffsetDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
 }
