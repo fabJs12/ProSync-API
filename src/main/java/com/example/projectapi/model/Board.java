@@ -1,6 +1,10 @@
 package com.example.projectapi.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.OffsetDateTime;
 
 @Entity
@@ -10,6 +14,8 @@ import java.time.OffsetDateTime;
         @UniqueConstraint(columnNames = {"id_proyecto", "nombre"})
         }
 )
+@Getter @Setter
+@NoArgsConstructor
 public class Board {
 
     @Id
@@ -27,43 +33,8 @@ public class Board {
     @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now()")
     private OffsetDateTime createdAt;
 
-    public Board() {
-    }
-
     public Board(String nombre, Project project) {
         this.nombre = nombre;
         this.project = project;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return nombre;
-    }
-
-    public void setName(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public Project getProject() {
-        return project;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
-    public OffsetDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(OffsetDateTime createdAt) {
-        this.createdAt = createdAt;
     }
 }

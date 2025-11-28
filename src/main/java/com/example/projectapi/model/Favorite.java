@@ -1,11 +1,19 @@
 package com.example.projectapi.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.io.Serializable;
 
 @Entity
 @Table(name = "favoritos", schema = "public")
 @IdClass(Favorite.FavoriteId.class)
+@Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Favorite {
 
     @Id
@@ -24,32 +32,6 @@ public class Favorite {
     )
     private Task task;
 
-    // Constructor vacío obligatorio
-    public Favorite() {}
-
-    // Constructor con parámetros
-    public Favorite(User user, Task task) {
-        this.user = user;
-        this.task = task;
-    }
-
-    // Getters y setters
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Task getTask() {
-        return task;
-    }
-
-    public void setTask(Task task) {
-        this.task = task;
-    }
-
     // Clase interna para la clave compuesta
     public static class FavoriteId implements Serializable {
         private Integer user;
@@ -61,7 +43,6 @@ public class Favorite {
             this.user = user;
             this.task = task;
         }
-
 
         // equals() y hashCode() son obligatorios para IdClass
         @Override
