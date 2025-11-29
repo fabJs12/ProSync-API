@@ -44,7 +44,7 @@ public class StorageService {
             // Limpiamos el endpoint por si pusiste 'https://' en el properties para evitar duplicarlo
             String cleanEndpoint = endpoint.replace("https://", "").replace("http://", "");
 
-            return "https://" + cleanEndpoint + "/file/" + bucketName + "/" + uniqueFileName;
+            return "https://" + cleanEndpoint + "/" + bucketName + "/" + uniqueFileName;
 
         } catch (IOException e) {
             throw new RuntimeException("Error al subir archivo a Backblaze", e);
