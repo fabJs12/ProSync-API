@@ -1,76 +1,82 @@
 package com.example.projectapi.controller;
 
-import com.example.projectapi.model.File;
+import com.example.projectapi.model.TaskFile;
+import com.example.projectapi.model.User;
 import com.example.projectapi.service.FileService;
+import com.example.projectapi.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/files")
 public class FileController {
     private final FileService fileService;
+    private final UserService userService;
 
-    public FileController(FileService fileService) {
+    public FileController(FileService fileService,  UserService userService) {
         this.fileService = fileService;
+        this.userService = userService;
     }
 
     @GetMapping
-    public List<File> findAll() {
-        return fileService.findAll();
+    public ResponseEntity<List<TaskFile>> findAll() {
+        return ResponseEntity.ok(fileService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<File> findById(@PathVariable Integer id) {
+    public ResponseEntity<TaskFile> findById(@PathVariable Integer id) {
         return fileService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/task/{taskId}")
-    public List<File> findByTaskId(@PathVariable Integer taskId) {
-        return fileService.findByTaskId(taskId);
+    public ResponseEntity<List<TaskFile>> findByTaskId(@PathVariable Integer taskId) {
+        return ResponseEntity.ok(fileService.findByTaskId(taskId));
     }
 
-    @PostMapping
-    public ResponseEntity<File> create(@RequestBody Map<String, Object> request) {
+    @PostMapping("/task/{taskId}")
+    public ResponseEntity<TaskFile> upload(@PathVariable Integer taskId, @RequestParam("file") MultipartFile file, Authentication authentication) {
         try {
-            Integer taskId = (Integer) request.get("taskId");
-            String archivoUrl = (String) request.get("archivoUrl");
-
-            if (taskId == null || archivoUrl == null || archivoUrl.trim().isEmpty()) {
+            if (file.isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
 
-            File created = fileService.create(taskId, archivoUrl);
-            return ResponseEntity.ok(created);
+            User user = userService.findByUsername(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            TaskFile created = fileService.uploadFile(taskId, file, user.getId());
+            return ResponseEntity.status(201).body(created);
+
         } catch (RuntimeException e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<File> update(@PathVariable Integer id,
-                                       @RequestBody Map<String, String> request) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Integer id, Authentication authentication) {
         try {
-            String archivoUrl = request.get("archivoUrl");
-            if (archivoUrl == null || archivoUrl.trim().isEmpty()) {
-                return ResponseEntity.badRequest().build();
+            TaskFile archivo = fileService.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Archivo no encontrado"));
+
+            User user = userService.findByUsername(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            boolean esResponsable = archivo.getTask().getResponsable() != null &&
+                    archivo.getTask().getResponsable().getId().equals(user.getId());
+
+            if (!esResponsable) {
+                return ResponseEntity.status(403).build();
             }
 
-            File updated = fileService.update(id, archivoUrl);
-            return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        try {
             fileService.delete(id);
             return ResponseEntity.noContent().build();
+
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }

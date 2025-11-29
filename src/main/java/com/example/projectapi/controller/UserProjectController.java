@@ -4,6 +4,7 @@ import com.example.projectapi.dto.CreateUserProjectDTO;
 import com.example.projectapi.model.User;
 import com.example.projectapi.model.UserProject;
 import com.example.projectapi.model.UserProjectId;
+import com.example.projectapi.service.NotificationService;
 import com.example.projectapi.service.ProjectService;
 import com.example.projectapi.service.UserProjectService;
 import com.example.projectapi.service.UserService;
@@ -19,13 +20,16 @@ public class UserProjectController {
     private final UserProjectService userProjectService;
     private final UserService userService;
     private final ProjectService projectService;
+    private final NotificationService notificationService;
 
     public UserProjectController(UserProjectService userProjectService, 
                                  UserService userService,
-                                 ProjectService projectService) {
+                                 ProjectService projectService,
+                                 NotificationService notificationService) {
         this.userProjectService = userProjectService;
         this.userService = userService;
         this.projectService = projectService;
+        this.notificationService = notificationService;
     }
 
     @GetMapping
@@ -124,6 +128,13 @@ public class UserProjectController {
                     dto.getRolId()
             );
 
+            notificationService.notifyProjectAdded(
+                created.getUsuario(),
+                created.getProyecto().getName(),
+                currentUser.getUsername(),
+                created.getRol().getRol()
+            );
+
             return ResponseEntity.status(201).body(created);
 
         } catch (RuntimeException e) {
@@ -164,6 +175,15 @@ public class UserProjectController {
             }
 
             UserProject updated = userProjectService.update(userId, projectId, newRolId);
+
+            // Crear notificación usando el método mejorado
+            notificationService.notifyRoleChanged(
+                updated.getUsuario(),
+                updated.getProyecto().getName(),
+                updated.getRol().getRol(),
+                currentUser.getUsername()
+            );
+
             return ResponseEntity.ok(updated);
 
         } catch (RuntimeException e) {
@@ -196,7 +216,21 @@ public class UserProjectController {
                 }
             }
 
+            UserProject userProject = userProjectService.findById(new UserProjectId(userId, projectId))
+                    .orElseThrow(() -> new RuntimeException("Asignación no encontrada"));
+
+            String projectName = userProject.getProyecto().getName();
+
+            User usuarioEliminado = userProject.getUsuario();
+
             userProjectService.delete(userId, projectId);
+
+            notificationService.notifyProjectRemoved(
+                usuarioEliminado,
+                projectName,
+                currentUser.getUsername()
+            );
+
             return ResponseEntity.noContent().build();
 
         } catch (RuntimeException e) {

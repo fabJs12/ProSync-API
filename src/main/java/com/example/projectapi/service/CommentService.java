@@ -15,13 +15,17 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     public CommentService(CommentRepository commentRepository,
                           TaskRepository taskRepository,
-                          UserRepository userRepository) {
+                          UserRepository userRepository,
+                          NotificationService notificationService
+    ) {
         this.commentRepository = commentRepository;
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     public List<Comment> findAll() {
@@ -52,7 +56,19 @@ public class CommentService {
         comment.setUser(user);
         comment.setContenido(contenido);
 
-        return commentRepository.save(comment);
+        Comment savedComment = commentRepository.save(comment);
+
+        if (task.getResponsable() != null && !task.getResponsable().getId().equals(user.getId())) {
+
+            notificationService.notifyTaskComment(
+                    task.getResponsable(),
+                    task,
+                    task.getTitle(),
+                    user.getUsername()
+            );
+        }
+
+        return savedComment;
     }
 
     public Comment update(Integer id, String contenido) {

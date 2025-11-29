@@ -1,10 +1,7 @@
 package com.example.projectapi.service;
 
 import com.example.projectapi.dto.TaskDTO;
-import com.example.projectapi.model.Board;
-import com.example.projectapi.model.Estado;
-import com.example.projectapi.model.Task;
-import com.example.projectapi.model.User;
+import com.example.projectapi.model.*;
 import com.example.projectapi.repository.BoardRepository;
 import com.example.projectapi.repository.EstadoRepository;
 import com.example.projectapi.repository.TaskRepository;
@@ -22,12 +19,14 @@ public class TaskService {
     private final BoardRepository boardRepository;
     private final EstadoRepository estadoRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
-    public TaskService(TaskRepository taskRepository, BoardRepository boardRepository, EstadoRepository estadoRepository, UserRepository userRepository) {
+    public TaskService(TaskRepository taskRepository, BoardRepository boardRepository, EstadoRepository estadoRepository, UserRepository userRepository, NotificationService notificationService) {
         this.taskRepository = taskRepository;
         this.boardRepository = boardRepository;
         this.estadoRepository = estadoRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     public List<Task> findByBoard(Integer boardId) {
@@ -100,26 +99,82 @@ public class TaskService {
 
     public TaskDTO createDTO(Task task, Integer boardId, Integer estadoId, Integer responsableId) {
         Task created = create(task, boardId, estadoId, responsableId);
+
+        if (responsableId != null) {
+            User responsable = userRepository.findById(responsableId)
+                    .orElseThrow(() -> new RuntimeException("Responsable no encontrado"));
+
+            String mensaje = "Te han asignado la tarea: " + created.getTitle();
+
+            notificationService.create(
+                    responsable,
+                    created,
+                    mensaje,
+                    Notification.NotificationType.TASK_ASSIGNED
+            );
+        }
         return convertToDTO(created);
     }
 
-    public Task update(Integer id, Task tarea) {
+    public Task update(Integer id, Task tareaConDatosNuevos) {
         return taskRepository.findById(id)
                 .map(existing -> {
-                    existing.setTitle(tarea.getTitle());
-                    existing.setDescription(tarea.getDescription());
-                    existing.setDueDate(tarea.getDueDate());
 
-                    if(tarea.getEstado() != null) {
-                        Estado estado = estadoRepository.findById(tarea.getEstado().getId())
+                    boolean cambioContenido = tareaConDatosNuevos.getTitle() != null ||
+                            tareaConDatosNuevos.getDescription() != null ||
+                            tareaConDatosNuevos.getDueDate() != null;
+
+                    if (tareaConDatosNuevos.getTitle() != null) {
+                        existing.setTitle(tareaConDatosNuevos.getTitle());
+                    }
+
+                    if (tareaConDatosNuevos.getDescription() != null) {
+                        existing.setDescription(tareaConDatosNuevos.getDescription());
+                    }
+
+                    if (tareaConDatosNuevos.getDueDate() != null) {
+                        existing.setDueDate(tareaConDatosNuevos.getDueDate());
+                    }
+
+                    if(tareaConDatosNuevos.getEstado() != null && tareaConDatosNuevos.getEstado().getId() != null) {
+                        Estado estado = estadoRepository.findById(tareaConDatosNuevos.getEstado().getId())
                                 .orElseThrow(() -> new RuntimeException("Estado no encontrado"));
                         existing.setEstado(estado);
                     }
 
-                    if(tarea.getResponsable() != null) {
-                        User responsable = userRepository.findById(tarea.getResponsable().getId())
-                                .orElseThrow(() -> new RuntimeException("Responsable no encontrado"));
-                        existing.setResponsable(responsable);
+                    boolean cambioResponsable = false;
+
+                    if(tareaConDatosNuevos.getResponsable() != null) {
+                        if (tareaConDatosNuevos.getResponsable().getId() != null) {
+                            User responsable = userRepository.findById(tareaConDatosNuevos.getResponsable().getId())
+                                    .orElseThrow(() -> new RuntimeException("Responsable no encontrado"));
+
+                            User anteriorResponsable = existing.getResponsable();
+
+                            if (anteriorResponsable == null || !anteriorResponsable.getId().equals(responsable.getId())) {
+                                existing.setResponsable(responsable);
+                                cambioResponsable = true;
+
+                                notificationService.createSafely(
+                                        responsable,
+                                        existing,
+                                        "La tarea ha sido actualizada: " + existing.getTitle(),
+                                        Notification.NotificationType.TASK_ASSIGNED
+                                );
+                            }
+                        } else {
+                            existing.setResponsable(null);
+                            cambioResponsable = true;
+                        }
+                    }
+
+                    if (cambioContenido && existing.getResponsable() != null && !cambioResponsable) {
+                        notificationService.createSafely(
+                                existing.getResponsable(),
+                                existing,
+                                "La tarea ha sido actualizada: " + existing.getTitle(),
+                                Notification.NotificationType.TASK_UPDATED
+                        );
                     }
 
                     return taskRepository.save(existing);

@@ -6,54 +6,67 @@ import com.example.projectapi.model.User;
 import com.example.projectapi.repository.NotificationRepository;
 import com.example.projectapi.repository.TaskRepository;
 import com.example.projectapi.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class NotificationService {
     private final NotificationRepository notificationRepository;
-    private final UserRepository userRepository;
-    private final TaskRepository taskRepository;
 
-    public NotificationService(NotificationRepository notificationRepository,
-                               UserRepository userRepository,
-                               TaskRepository taskRepository) {
+    public NotificationService(NotificationRepository notificationRepository) {
         this.notificationRepository = notificationRepository;
-        this.userRepository = userRepository;
-        this.taskRepository = taskRepository;
     }
 
-    public List<Notification> findAll() {
-        return notificationRepository.findAll();
+    public Page<Notification> findByUserId(Integer userId, Pageable pageable) {
+        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
+    }
+
+    public Page<Notification> findByUserIdAndLeida(Integer userId, Boolean leida, Pageable pageable) {
+        return notificationRepository.findByUserIdAndLeidaOrderByCreatedAtDesc(userId, leida, pageable);
     }
 
     public Optional<Notification> findById(Integer id) {
         return notificationRepository.findById(id);
     }
 
-    public List<Notification> findByUserId(Integer userId) {
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
-    }
-
     public List<Notification> findByTaskId(Integer taskId) {
         return notificationRepository.findByTaskId(taskId);
     }
 
-    public Notification create(Integer userId, Integer taskId, String mensaje) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    public Long countUnread(Integer userId) {
+        return notificationRepository.countUnreadByUserId(userId);
+    }
 
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
+    /**
+     * Crea una notificación validando que el usuario tenga acceso a la tarea si se proporciona
+     */
+    public Notification create(User user, Task task, String mensaje, Notification.NotificationType tipo) {
 
         Notification notification = new Notification();
         notification.setUser(user);
         notification.setTask(task);
         notification.setMensaje(mensaje);
+        notification.setTipo(tipo);
         notification.setLeida(false);
 
         return notificationRepository.save(notification);
+    }
+
+    /**
+     * Crea notificación de forma segura, sin lanzar excepción si falla
+     */
+    public void createSafely(User user, Task task, String mensaje, Notification.NotificationType tipo) {
+        try {
+            create(user, task, mensaje, tipo);
+        } catch (Exception e) {
+            System.err.println("Error al crear notificación: " + e.getMessage());
+        }
     }
 
     public Notification update(Integer id, String mensaje) {
@@ -65,33 +78,90 @@ public class NotificationService {
                 .orElseThrow(() -> new RuntimeException("Notificación no encontrada"));
     }
 
-    public Notification markAsRead(Integer id) {
+    public Notification markAsRead(Integer id, Integer requestingUserId) {
         return notificationRepository.findById(id)
                 .map(existing -> {
+                    if (!existing.getUser().getId().equals(requestingUserId)) {
+                        throw new RuntimeException("No tienes permiso para marcar esta notificación");
+                    }
                     existing.setLeida(true);
+                    existing.setFechaLectura(OffsetDateTime.now());
                     return notificationRepository.save(existing);
                 })
                 .orElseThrow(() -> new RuntimeException("Notificación no encontrada"));
     }
 
-    public Notification markAsUnread(Integer id) {
+    public Notification markAsUnread(Integer id, Integer requestingUserId) {
         return notificationRepository.findById(id)
                 .map(existing -> {
+                    if (!existing.getUser().getId().equals(requestingUserId)) {
+                        throw new RuntimeException("No tienes permiso para marcar esta notificación");
+                    }
                     existing.setLeida(false);
+                    existing.setFechaLectura(null);
                     return notificationRepository.save(existing);
                 })
                 .orElseThrow(() -> new RuntimeException("Notificación no encontrada"));
     }
 
-    public void delete(Integer id) {
-        if (!notificationRepository.existsById(id)) {
-            throw new RuntimeException("Notificación no encontrada");
+    @Transactional
+    public int markAllAsRead(Integer userId) {
+        return notificationRepository.markAllAsReadByUserId(userId);
+    }
+
+    public void delete(Integer id, Integer requestingUserId) {
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Notificación no encontrada"));
+        
+        if (!notification.getUser().getId().equals(requestingUserId)) {
+            throw new RuntimeException("No tienes permiso para eliminar esta notificación");
         }
+        
         notificationRepository.deleteById(id);
     }
 
-    public void deleteByUserId(Integer userId) {
-        List<Notification> notifications = notificationRepository.findByUserId(userId);
+    @Transactional
+    public void deleteByUserId(Integer userId, Integer requestingUserId) {
+        if (!userId.equals(requestingUserId)) {
+            throw new RuntimeException("No tienes permiso para eliminar notificaciones de otro usuario");
+        }
+        
+        List<Notification> notifications = notificationRepository.findByUserIdOrderByCreatedAtDesc(
+            userId, 
+            Pageable.unpaged()
+        ).getContent();
+        
         notificationRepository.deleteAll(notifications);
+    }
+
+    
+    public void notifyTaskAssigned(User user, Task task, String taskTitle, String assignerUsername) {
+        String mensaje = assignerUsername + " te ha asignado la tarea: " + taskTitle;
+        createSafely(user, task, mensaje, Notification.NotificationType.TASK_ASSIGNED);
+    }
+
+    public void notifyTaskUpdated(User user, Task task, String taskTitle, String updaterUsername) {
+        String mensaje = updaterUsername + " ha actualizado la tarea: " + taskTitle;
+        createSafely(user, task, mensaje, Notification.NotificationType.TASK_UPDATED);
+    }
+
+    public void notifyTaskComment(User user, Task task, String taskTitle, String commenterUsername) {
+        String mensaje = commenterUsername + " ha comentado en la tarea: " + taskTitle;
+        createSafely(user, task, mensaje, Notification.NotificationType.TASK_COMMENT);
+    }
+
+    public void notifyProjectAdded(User user, String projectName, String adderUsername, String roleName) {
+        String mensaje = adderUsername + " te ha agregado al proyecto: " + projectName + " como " + roleName;
+        createSafely(user, null, mensaje, Notification.NotificationType.PROJECT_ADDED);
+    }
+
+    public void notifyProjectRemoved(User user, String projectName, String removerUsername) {
+        String mensaje = removerUsername + " te ha removido del proyecto: " + projectName;
+        createSafely(user, null, mensaje, Notification.NotificationType.PROJECT_REMOVED);
+    }
+
+    public void notifyRoleChanged(User user, String projectName, String roleName, String changerUsername) {
+        String mensaje = changerUsername + " ha cambiado tu rol a: " + roleName + " en el proyecto " + projectName;
+        createSafely(user, null, mensaje, Notification.NotificationType.ROLE_CHANGED);
     }
 }

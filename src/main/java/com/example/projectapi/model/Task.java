@@ -1,12 +1,16 @@
 package com.example.projectapi.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "tareas", schema = "public")
@@ -28,22 +32,28 @@ public class Task {
     private OffsetDateTime dueDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
-    @JoinColumn(name = "id_board",  nullable = false)
+    @JoinColumn(name = "id_board", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "tasks", "project"})
     private Board board;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
     @JoinColumn(name = "id_estado", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Estado estado;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
     @JoinColumn(name = "responsable_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "password", "roles", "projects"})
     private User responsable;
 
     @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now()")
+    @CreationTimestamp
     private OffsetDateTime createdAt;
+
+    // Relación con notificaciones - se borran en cascada cuando se borra la tarea
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Notification> notifications = new ArrayList<>();
 
     public Task(String title, String description, Estado estado, OffsetDateTime dueDate, Board board, User responsable) {
         this.title = title;
