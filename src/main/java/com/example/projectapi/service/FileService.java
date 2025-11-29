@@ -35,6 +35,25 @@ public class FileService {
     }
 
     public TaskFile uploadFile(Integer taskId, MultipartFile multipartFile) {
+
+        String tipoArchivo = multipartFile.getContentType();
+
+        List<String> tiposPermitidos = List.of(
+                "image/jpeg",
+                "image/png",
+                "image/gif",
+                "application/pdf",
+                "application/msword", // .doc antiguo
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx nuevo
+                "application/vnd.ms-excel", // .xls antiguo
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx nuevo
+                "text/plain"
+        );
+
+        if (tipoArchivo == null || !tiposPermitidos.contains(tipoArchivo)) {
+            throw new RuntimeException("Formato no permitido: " + tipoArchivo);
+        }
+
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
 
