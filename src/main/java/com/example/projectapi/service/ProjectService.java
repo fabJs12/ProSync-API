@@ -1,9 +1,6 @@
 package com.example.projectapi.service;
 
-import com.example.projectapi.model.Project;
-import com.example.projectapi.model.Rol;
-import com.example.projectapi.model.User;
-import com.example.projectapi.model.UserProject;
+import com.example.projectapi.model.*;
 import com.example.projectapi.repository.ProjectRepository;
 import com.example.projectapi.repository.RolRepository;
 import com.example.projectapi.repository.UserProjectRepository;
@@ -18,11 +15,13 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final RolRepository rolRepository;
     private final UserProjectRepository userProjectRepository;
+    private final UserProjectService userProjectService;
 
-    public ProjectService(ProjectRepository projectRepository, RolRepository rolRepository, UserProjectRepository userProjectRepository) {
+    public ProjectService(ProjectRepository projectRepository, RolRepository rolRepository, UserProjectRepository userProjectRepository, UserProjectService userProjectService) {
         this.projectRepository = projectRepository;
         this.rolRepository = rolRepository;
         this.userProjectRepository = userProjectRepository;
+        this.userProjectService = userProjectService;
     }
 
     public List<Project> findAll() {
@@ -49,6 +48,10 @@ public class ProjectService {
 
     public List<Project> getProyectosUsuarioEsMiembro(Integer userId, Rol rolMiembro) { 
         return projectRepository.findByUsuariosAsociadosUsuarioIdAndUsuariosAsociadosRol(userId, rolMiembro); 
+    }
+
+    public boolean esMiembro(Integer userId, Integer projectId) {
+        return userProjectService.usuarioTieneRelacion(projectId, userId);
     }
 
     public Optional<Project> findById(Integer id) {
