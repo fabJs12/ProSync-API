@@ -35,6 +35,11 @@ public class TaskFile {
     @CreationTimestamp
     private OffsetDateTime createdAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id") // Nombre de la columna en BD
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "password", "roles", "projects"}) // Evita bucles y datos sensibles
+    private User autor;
+
     // Constructor con parámetros
     public TaskFile(Task task, String archivoUrl) {
         this.task = task;

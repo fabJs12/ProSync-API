@@ -2,8 +2,10 @@ package com.example.projectapi.service;
 
 import com.example.projectapi.model.TaskFile;
 import com.example.projectapi.model.Task;
+import com.example.projectapi.model.User;
 import com.example.projectapi.repository.FileRepository;
 import com.example.projectapi.repository.TaskRepository;
+import com.example.projectapi.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,11 +17,13 @@ public class FileService {
     private final FileRepository fileRepository;
     private final TaskRepository taskRepository;
     private final StorageService storageService;
+    private final UserRepository userRepository;
 
-    public FileService(FileRepository fileRepository, TaskRepository taskRepository, StorageService storageService) {
+    public FileService(FileRepository fileRepository, TaskRepository taskRepository, StorageService storageService, UserRepository userRepository) {
         this.fileRepository = fileRepository;
         this.taskRepository = taskRepository;
         this.storageService = storageService;
+        this.userRepository = userRepository;
     }
 
     public List<TaskFile> findAll() {
@@ -34,7 +38,7 @@ public class FileService {
         return fileRepository.findByTaskIdOrderByCreatedAtDesc(taskId);
     }
 
-    public TaskFile uploadFile(Integer taskId, MultipartFile multipartFile) {
+    public TaskFile uploadFile(Integer taskId, MultipartFile multipartFile, Integer userId) {
 
         String tipoArchivo = multipartFile.getContentType();
 
@@ -57,10 +61,15 @@ public class FileService {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
 
+        User usuario = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+
         String urlGenerada = storageService.uploadFile(multipartFile);
 
         TaskFile file = new TaskFile();
         file.setTask(task);
+        file.setAutor(usuario);
         file.setArchivoUrl(urlGenerada);
 
         return fileRepository.save(file);

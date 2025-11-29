@@ -40,13 +40,16 @@ public class FileController {
     }
 
     @PostMapping("/task/{taskId}")
-    public ResponseEntity<TaskFile> upload(@PathVariable Integer taskId, @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<TaskFile> upload(@PathVariable Integer taskId, @RequestParam("file") MultipartFile file, Authentication authentication) {
         try {
             if (file.isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
 
-            TaskFile created = fileService.uploadFile(taskId, file);
+            User user = userService.findByUsername(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            TaskFile created = fileService.uploadFile(taskId, file, user.getId());
             return ResponseEntity.status(201).body(created);
 
         } catch (RuntimeException e) {
@@ -63,8 +66,6 @@ public class FileController {
 
             User user = userService.findByUsername(authentication.getName())
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-            Integer projectId = archivo.getTask().getBoard().getProject().getId();
 
             boolean esResponsable = archivo.getTask().getResponsable() != null &&
                     archivo.getTask().getResponsable().getId().equals(user.getId());
