@@ -76,9 +76,15 @@ public class FileService {
     }
 
     public void delete(Integer id) {
-        if (!fileRepository.existsById(id)) {
-            throw new RuntimeException("Archivo no encontrado");
-        }
-        fileRepository.deleteById(id);
+        TaskFile archivo = fileRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Archivo no encontrado"));
+
+        String fileUrl = archivo.getArchivoUrl();
+
+        String fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
+
+        storageService.deleteFile(fileName);
+
+        fileRepository.delete(archivo);
     }
 }

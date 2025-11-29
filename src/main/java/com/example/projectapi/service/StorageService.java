@@ -1,5 +1,6 @@
 package com.example.projectapi.service;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -48,6 +49,14 @@ public class StorageService {
 
         } catch (IOException e) {
             throw new RuntimeException("Error al subir archivo a Backblaze", e);
+        }
+    }
+
+    public void deleteFile(String fileName) {
+        try {
+            s3Client.deleteObject(bucketName, fileName);
+        } catch (Exception e) {
+            System.err.println("Error al borrar archivo de Backblaze: " + e.getMessage());
         }
     }
 }
