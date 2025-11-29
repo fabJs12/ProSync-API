@@ -1,6 +1,7 @@
 package com.example.projectapi.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,6 +33,7 @@ public class Task {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_board", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "tasks", "project"})
     private Board board;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -20,18 +20,15 @@ public class TaskController {
     private final BoardService boardService;
     private final ProjectService projectService;
     private final UserService userService;
-    private final NotificationService notificationService;
 
     public TaskController(TaskService taskService, 
                          BoardService boardService, 
                          ProjectService projectService, 
-                         UserService userService,
-                         NotificationService notificationService) {
+                         UserService userService) {
         this.taskService = taskService;
         this.boardService = boardService;
         this.projectService = projectService;
         this.userService = userService;
-        this.notificationService = notificationService;
     }
 
     @GetMapping("/board/{boardId}")
@@ -90,16 +87,6 @@ public class TaskController {
                 taskDTO.getResponsableId()
         );
 
-        // Notificar al responsable si existe
-        if (taskDTO.getResponsableId() != null && !taskDTO.getResponsableId().equals(user.getId())) {
-            notificationService.notifyTaskAssigned(
-                taskDTO.getResponsableId(),
-                created.getId(),
-                created.getTitle(),
-                user.getUsername()
-            );
-        }
-
         return ResponseEntity.status(201).body(created);
     }
 
@@ -120,41 +107,7 @@ public class TaskController {
             return ResponseEntity.status(403).build();
         }
 
-        // Guardar datos anteriores para comparar
-        Integer oldResponsableId = task.getResponsable() != null ? task.getResponsable().getId() : null;
-        Integer newResponsableId = updatedTask.getResponsable() != null ? updatedTask.getResponsable().getId() : null;
-
         TaskDTO updated = taskService.updateDTO(id, updatedTask);
-
-        // Notificar si cambió el responsable
-        if (newResponsableId != null && !newResponsableId.equals(oldResponsableId) && !newResponsableId.equals(user.getId())) {
-            notificationService.notifyTaskAssigned(
-                newResponsableId,
-                updated.getId(),
-                updated.getTitle(),
-                user.getUsername()
-            );
-        }
-
-        // Notificar al responsable anterior si existe y es diferente del que hace la actualización
-        if (oldResponsableId != null && !oldResponsableId.equals(user.getId()) && !oldResponsableId.equals(newResponsableId)) {
-            notificationService.notifyTaskUpdated(
-                oldResponsableId,
-                updated.getId(),
-                updated.getTitle(),
-                user.getUsername()
-            );
-        }
-
-        // Si el responsable actual no cambió pero se actualizó la tarea, notificar
-        if (newResponsableId != null && newResponsableId.equals(oldResponsableId) && !newResponsableId.equals(user.getId())) {
-            notificationService.notifyTaskUpdated(
-                newResponsableId,
-                updated.getId(),
-                updated.getTitle(),
-                user.getUsername()
-            );
-        }
 
         return ResponseEntity.ok(updated);
     }

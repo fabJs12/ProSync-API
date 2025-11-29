@@ -128,9 +128,8 @@ public class UserProjectController {
                     dto.getRolId()
             );
 
-            // Crear notificación usando el método mejorado
             notificationService.notifyProjectAdded(
-                dto.getUserId(),
+                created.getUsuario(),
                 created.getProyecto().getName(),
                 currentUser.getUsername(),
                 created.getRol().getRol()
@@ -179,7 +178,7 @@ public class UserProjectController {
 
             // Crear notificación usando el método mejorado
             notificationService.notifyRoleChanged(
-                userId,
+                updated.getUsuario(),
                 updated.getProyecto().getName(),
                 updated.getRol().getRol(),
                 currentUser.getUsername()
@@ -219,13 +218,15 @@ public class UserProjectController {
 
             UserProject userProject = userProjectService.findById(new UserProjectId(userId, projectId))
                     .orElseThrow(() -> new RuntimeException("Asignación no encontrada"));
+
             String projectName = userProject.getProyecto().getName();
+
+            User usuarioEliminado = userProject.getUsuario();
 
             userProjectService.delete(userId, projectId);
 
-            // Crear notificación usando el método mejorado
             notificationService.notifyProjectRemoved(
-                userId,
+                usuarioEliminado,
                 projectName,
                 currentUser.getUsername()
             );

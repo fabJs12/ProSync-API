@@ -1,5 +1,6 @@
 package com.example.projectapi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,6 +30,7 @@ public class Board {
     // Relación con la tabla "projects"
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_proyecto", foreignKey = @ForeignKey(name = "fk_boards_proyecto"))
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "boards"})
     private Project project;
 
     @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now()")

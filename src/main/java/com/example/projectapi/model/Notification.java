@@ -1,5 +1,6 @@
 package com.example.projectapi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -45,6 +46,7 @@ public class Notification {
             name = "id_tarea",
             foreignKey = @ForeignKey(name = "fk_notificaciones_tarea")
     )
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "notifications", "board"})
     private Task task;
 
     @Column(name = "mensaje", nullable = false, columnDefinition = "TEXT")

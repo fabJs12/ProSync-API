@@ -17,17 +17,10 @@ import java.util.Map;
 @RequestMapping("/api/comments")
 public class CommentController {
     private final CommentService commentService;
-    private final NotificationService notificationService;
-    private final TaskService taskService;
     private final UserService userService;
 
-    public CommentController(CommentService commentService, 
-                            NotificationService notificationService,
-                            TaskService taskService,
-                            UserService userService) {
+    public CommentController(CommentService commentService, UserService userService) {
         this.commentService = commentService;
-        this.notificationService = notificationService;
-        this.taskService = taskService;
         this.userService = userService;
     }
 
@@ -68,19 +61,6 @@ public class CommentController {
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
             Comment created = commentService.create(taskId, user.getId(), contenido);
-
-            // Notificar al responsable de la tarea si existe y no es quien comentó
-            Task task = taskService.findById(taskId)
-                    .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
-
-            if (task.getResponsable() != null && !task.getResponsable().getId().equals(user.getId())) {
-                notificationService.notifyTaskComment(
-                    task.getResponsable().getId(),
-                    taskId,
-                    task.getTitle(),
-                    user.getUsername()
-                );
-            }
 
             return ResponseEntity.ok(created);
         } catch (RuntimeException e) {

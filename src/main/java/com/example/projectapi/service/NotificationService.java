@@ -18,15 +18,9 @@ import java.util.Optional;
 @Service
 public class NotificationService {
     private final NotificationRepository notificationRepository;
-    private final UserRepository userRepository;
-    private final TaskRepository taskRepository;
 
-    public NotificationService(NotificationRepository notificationRepository,
-                               UserRepository userRepository,
-                               TaskRepository taskRepository) {
+    public NotificationService(NotificationRepository notificationRepository) {
         this.notificationRepository = notificationRepository;
-        this.userRepository = userRepository;
-        this.taskRepository = taskRepository;
     }
 
     public Page<Notification> findByUserId(Integer userId, Pageable pageable) {
@@ -52,15 +46,7 @@ public class NotificationService {
     /**
      * Crea una notificación validando que el usuario tenga acceso a la tarea si se proporciona
      */
-    public Notification create(Integer userId, Integer taskId, String mensaje, Notification.NotificationType tipo) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        Task task = null;
-        if (taskId != null) {
-            task = taskRepository.findById(taskId)
-                    .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
-        }
+    public Notification create(User user, Task task, String mensaje, Notification.NotificationType tipo) {
 
         Notification notification = new Notification();
         notification.setUser(user);
@@ -75,9 +61,9 @@ public class NotificationService {
     /**
      * Crea notificación de forma segura, sin lanzar excepción si falla
      */
-    public void createSafely(Integer userId, Integer taskId, String mensaje, Notification.NotificationType tipo) {
+    public void createSafely(User user, Task task, String mensaje, Notification.NotificationType tipo) {
         try {
-            create(userId, taskId, mensaje, tipo);
+            create(user, task, mensaje, tipo);
         } catch (Exception e) {
             System.err.println("Error al crear notificación: " + e.getMessage());
         }
@@ -149,33 +135,33 @@ public class NotificationService {
     }
 
     
-    public void notifyTaskAssigned(Integer userId, Integer taskId, String taskTitle, String assignerUsername) {
+    public void notifyTaskAssigned(User user, Task task, String taskTitle, String assignerUsername) {
         String mensaje = assignerUsername + " te ha asignado la tarea: " + taskTitle;
-        createSafely(userId, taskId, mensaje, Notification.NotificationType.TASK_ASSIGNED);
+        createSafely(user, task, mensaje, Notification.NotificationType.TASK_ASSIGNED);
     }
 
-    public void notifyTaskUpdated(Integer userId, Integer taskId, String taskTitle, String updaterUsername) {
+    public void notifyTaskUpdated(User user, Task task, String taskTitle, String updaterUsername) {
         String mensaje = updaterUsername + " ha actualizado la tarea: " + taskTitle;
-        createSafely(userId, taskId, mensaje, Notification.NotificationType.TASK_UPDATED);
+        createSafely(user, task, mensaje, Notification.NotificationType.TASK_UPDATED);
     }
 
-    public void notifyTaskComment(Integer userId, Integer taskId, String taskTitle, String commenterUsername) {
+    public void notifyTaskComment(User user, Task task, String taskTitle, String commenterUsername) {
         String mensaje = commenterUsername + " ha comentado en la tarea: " + taskTitle;
-        createSafely(userId, taskId, mensaje, Notification.NotificationType.TASK_COMMENT);
+        createSafely(user, task, mensaje, Notification.NotificationType.TASK_COMMENT);
     }
 
-    public void notifyProjectAdded(Integer userId, String projectName, String adderUsername, String roleName) {
+    public void notifyProjectAdded(User user, String projectName, String adderUsername, String roleName) {
         String mensaje = adderUsername + " te ha agregado al proyecto: " + projectName + " como " + roleName;
-        createSafely(userId, null, mensaje, Notification.NotificationType.PROJECT_ADDED);
+        createSafely(user, null, mensaje, Notification.NotificationType.PROJECT_ADDED);
     }
 
-    public void notifyProjectRemoved(Integer userId, String projectName, String removerUsername) {
+    public void notifyProjectRemoved(User user, String projectName, String removerUsername) {
         String mensaje = removerUsername + " te ha removido del proyecto: " + projectName;
-        createSafely(userId, null, mensaje, Notification.NotificationType.PROJECT_REMOVED);
+        createSafely(user, null, mensaje, Notification.NotificationType.PROJECT_REMOVED);
     }
 
-    public void notifyRoleChanged(Integer userId, String projectName, String roleName, String changerUsername) {
+    public void notifyRoleChanged(User user, String projectName, String roleName, String changerUsername) {
         String mensaje = changerUsername + " ha cambiado tu rol a: " + roleName + " en el proyecto " + projectName;
-        createSafely(userId, null, mensaje, Notification.NotificationType.ROLE_CHANGED);
+        createSafely(user, null, mensaje, Notification.NotificationType.ROLE_CHANGED);
     }
 }
