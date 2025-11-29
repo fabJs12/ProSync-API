@@ -5,10 +5,7 @@ import com.example.projectapi.dto.TaskDTO;
 import com.example.projectapi.model.Board;
 import com.example.projectapi.model.Task;
 import com.example.projectapi.model.User;
-import com.example.projectapi.service.BoardService;
-import com.example.projectapi.service.ProjectService;
-import com.example.projectapi.service.TaskService;
-import com.example.projectapi.service.UserService;
+import com.example.projectapi.service.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -22,13 +19,19 @@ public class TaskController {
     private final TaskService taskService;
     private final BoardService boardService;
     private final ProjectService projectService;
-    private  final UserService userService;
+    private final UserService userService;
+    private final NotificationService notificationService;
 
-    public TaskController(TaskService taskService, BoardService boardService, ProjectService projectService, UserService userService) {
+    public TaskController(TaskService taskService, 
+                         BoardService boardService, 
+                         ProjectService projectService, 
+                         UserService userService,
+                         NotificationService notificationService) {
         this.taskService = taskService;
         this.boardService = boardService;
         this.projectService = projectService;
         this.userService = userService;
+        this.notificationService = notificationService;
     }
 
     @GetMapping("/board/{boardId}")
@@ -87,13 +90,23 @@ public class TaskController {
                 taskDTO.getResponsableId()
         );
 
+        // Notificar al responsable si existe
+        if (taskDTO.getResponsableId() != null && !taskDTO.getResponsableId().equals(user.getId())) {
+            notificationService.notifyTaskAssigned(
+                taskDTO.getResponsableId(),
+                created.getId(),
+                created.getTitle(),
+                user.getUsername()
+            );
+        }
+
         return ResponseEntity.status(201).body(created);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<TaskDTO> update(@PathVariable Integer id, @RequestBody Task updatedTask, Authentication authentication) {
         Task task = taskService.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tarea no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
 
         Integer projectId = task.getBoard().getProject().getId();
 
@@ -101,14 +114,47 @@ public class TaskController {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         boolean esLider = projectService.esLider(projectId, user.getId());
-
-        boolean esResponsable = task.getResponsable()!= null && task.getResponsable().getId().equals(user.getId());
+        boolean esResponsable = task.getResponsable() != null && task.getResponsable().getId().equals(user.getId());
 
         if(!esLider && !esResponsable) {
             return ResponseEntity.status(403).build();
         }
 
+        // Guardar datos anteriores para comparar
+        Integer oldResponsableId = task.getResponsable() != null ? task.getResponsable().getId() : null;
+        Integer newResponsableId = updatedTask.getResponsable() != null ? updatedTask.getResponsable().getId() : null;
+
         TaskDTO updated = taskService.updateDTO(id, updatedTask);
+
+        // Notificar si cambió el responsable
+        if (newResponsableId != null && !newResponsableId.equals(oldResponsableId) && !newResponsableId.equals(user.getId())) {
+            notificationService.notifyTaskAssigned(
+                newResponsableId,
+                updated.getId(),
+                updated.getTitle(),
+                user.getUsername()
+            );
+        }
+
+        // Notificar al responsable anterior si existe y es diferente del que hace la actualización
+        if (oldResponsableId != null && !oldResponsableId.equals(user.getId()) && !oldResponsableId.equals(newResponsableId)) {
+            notificationService.notifyTaskUpdated(
+                oldResponsableId,
+                updated.getId(),
+                updated.getTitle(),
+                user.getUsername()
+            );
+        }
+
+        // Si el responsable actual no cambió pero se actualizó la tarea, notificar
+        if (newResponsableId != null && newResponsableId.equals(oldResponsableId) && !newResponsableId.equals(user.getId())) {
+            notificationService.notifyTaskUpdated(
+                newResponsableId,
+                updated.getId(),
+                updated.getTitle(),
+                user.getUsername()
+            );
+        }
 
         return ResponseEntity.ok(updated);
     }

@@ -8,6 +8,8 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "tareas", schema = "public")
@@ -29,7 +31,7 @@ public class Task {
     private OffsetDateTime dueDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_board",  nullable = false)
+    @JoinColumn(name = "id_board", nullable = false)
     private Board board;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -43,6 +45,11 @@ public class Task {
     @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now()")
     @CreationTimestamp
     private OffsetDateTime createdAt;
+
+    // Relación con notificaciones - se borran en cascada cuando se borra la tarea
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Notification> notifications = new ArrayList<>();
 
     public Task(String title, String description, Estado estado, OffsetDateTime dueDate, Board board, User responsable) {
         this.title = title;

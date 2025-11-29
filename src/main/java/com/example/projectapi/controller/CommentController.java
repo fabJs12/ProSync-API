@@ -1,8 +1,14 @@
 package com.example.projectapi.controller;
 
 import com.example.projectapi.model.Comment;
+import com.example.projectapi.model.Task;
+import com.example.projectapi.model.User;
 import com.example.projectapi.service.CommentService;
+import com.example.projectapi.service.NotificationService;
+import com.example.projectapi.service.TaskService;
+import com.example.projectapi.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
@@ -11,9 +17,18 @@ import java.util.Map;
 @RequestMapping("/api/comments")
 public class CommentController {
     private final CommentService commentService;
+    private final NotificationService notificationService;
+    private final TaskService taskService;
+    private final UserService userService;
 
-    public CommentController(CommentService commentService) {
+    public CommentController(CommentService commentService, 
+                            NotificationService notificationService,
+                            TaskService taskService,
+                            UserService userService) {
         this.commentService = commentService;
+        this.notificationService = notificationService;
+        this.taskService = taskService;
+        this.userService = userService;
     }
 
     @GetMapping
@@ -39,17 +54,34 @@ public class CommentController {
     }
 
     @PostMapping
-    public ResponseEntity<Comment> create(@RequestBody Map<String, Object> request) {
+    public ResponseEntity<Comment> create(@RequestBody Map<String, Object> request, Authentication authentication) {
         try {
             Integer taskId = (Integer) request.get("taskId");
-            Integer userId = (Integer) request.get("userId");
             String contenido = (String) request.get("contenido");
 
-            if (taskId == null || userId == null || contenido == null || contenido.trim().isEmpty()) {
+            if (taskId == null || contenido == null || contenido.trim().isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
 
-            Comment created = commentService.create(taskId, userId, contenido);
+            // Obtener el usuario autenticado
+            User user = userService.findByUsername(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            Comment created = commentService.create(taskId, user.getId(), contenido);
+
+            // Notificar al responsable de la tarea si existe y no es quien comentó
+            Task task = taskService.findById(taskId)
+                    .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
+
+            if (task.getResponsable() != null && !task.getResponsable().getId().equals(user.getId())) {
+                notificationService.notifyTaskComment(
+                    task.getResponsable().getId(),
+                    taskId,
+                    task.getTitle(),
+                    user.getUsername()
+                );
+            }
+
             return ResponseEntity.ok(created);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
