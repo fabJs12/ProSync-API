@@ -1,10 +1,12 @@
 package com.example.projectapi.service;
 
-import com.example.projectapi.model.File;
+import com.example.projectapi.model.TaskFile;
 import com.example.projectapi.model.Task;
 import com.example.projectapi.repository.FileRepository;
 import com.example.projectapi.repository.TaskRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -12,42 +14,37 @@ import java.util.Optional;
 public class FileService {
     private final FileRepository fileRepository;
     private final TaskRepository taskRepository;
+    private final StorageService storageService;
 
-    public FileService(FileRepository fileRepository, TaskRepository taskRepository) {
+    public FileService(FileRepository fileRepository, TaskRepository taskRepository, StorageService storageService) {
         this.fileRepository = fileRepository;
         this.taskRepository = taskRepository;
+        this.storageService = storageService;
     }
 
-    public List<File> findAll() {
+    public List<TaskFile> findAll() {
         return fileRepository.findAll();
     }
 
-    public Optional<File> findById(Integer id) {
+    public Optional<TaskFile> findById(Integer id) {
         return fileRepository.findById(id);
     }
 
-    public List<File> findByTaskId(Integer taskId) {
+    public List<TaskFile> findByTaskId(Integer taskId) {
         return fileRepository.findByTaskIdOrderByCreatedAtDesc(taskId);
     }
 
-    public File create(Integer taskId, String archivoUrl) {
+    public TaskFile uploadFile(Integer taskId, MultipartFile multipartFile) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
 
-        File file = new File();
+        String urlGenerada = storageService.uploadFile(multipartFile);
+
+        TaskFile file = new TaskFile();
         file.setTask(task);
-        file.setArchivoUrl(archivoUrl);
+        file.setArchivoUrl(urlGenerada);
 
         return fileRepository.save(file);
-    }
-
-    public File update(Integer id, String archivoUrl) {
-        return fileRepository.findById(id)
-                .map(existing -> {
-                    existing.setArchivoUrl(archivoUrl);
-                    return fileRepository.save(existing);
-                })
-                .orElseThrow(() -> new RuntimeException("Archivo no encontrado"));
     }
 
     public void delete(Integer id) {

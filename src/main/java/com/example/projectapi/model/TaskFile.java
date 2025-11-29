@@ -1,5 +1,6 @@
 package com.example.projectapi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,7 @@ import java.time.OffsetDateTime;
 @Table(name = "archivos", schema = "public")
 @Getter @Setter
 @NoArgsConstructor
-public class File {
+public class TaskFile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,6 +25,7 @@ public class File {
             nullable = false,
             foreignKey = @ForeignKey(name = "fk_archivos_tarea")
     )
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "board", "estado", "responsable", "files"})
     private Task task;
 
     @Column(name = "archivo_url", nullable = false, columnDefinition = "TEXT")
@@ -34,7 +36,7 @@ public class File {
     private OffsetDateTime createdAt;
 
     // Constructor con parámetros
-    public File(Task task, String archivoUrl) {
+    public TaskFile(Task task, String archivoUrl) {
         this.task = task;
         this.archivoUrl = archivoUrl;
     }
