@@ -103,23 +103,35 @@ public class TaskService {
         return convertToDTO(created);
     }
 
-    public Task update(Integer id, Task tarea) {
+    public Task update(Integer id, Task tareaConDatosNuevos) {
         return taskRepository.findById(id)
                 .map(existing -> {
-                    existing.setTitle(tarea.getTitle());
-                    existing.setDescription(tarea.getDescription());
-                    existing.setDueDate(tarea.getDueDate());
+                    if (tareaConDatosNuevos.getTitle() != null) {
+                        existing.setTitle(tareaConDatosNuevos.getTitle());
+                    }
 
-                    if(tarea.getEstado() != null) {
-                        Estado estado = estadoRepository.findById(tarea.getEstado().getId())
+                    if (tareaConDatosNuevos.getDescription() != null) {
+                        existing.setDescription(tareaConDatosNuevos.getDescription());
+                    }
+
+                    if (tareaConDatosNuevos.getDueDate() != null) {
+                        existing.setDueDate(tareaConDatosNuevos.getDueDate());
+                    }
+
+                    if(tareaConDatosNuevos.getEstado() != null && tareaConDatosNuevos.getEstado().getId() != null) {
+                        Estado estado = estadoRepository.findById(tareaConDatosNuevos.getEstado().getId())
                                 .orElseThrow(() -> new RuntimeException("Estado no encontrado"));
                         existing.setEstado(estado);
                     }
 
-                    if(tarea.getResponsable() != null) {
-                        User responsable = userRepository.findById(tarea.getResponsable().getId())
-                                .orElseThrow(() -> new RuntimeException("Responsable no encontrado"));
-                        existing.setResponsable(responsable);
+                    if(tareaConDatosNuevos.getResponsable() != null) {
+                        if (tareaConDatosNuevos.getResponsable().getId() != null) {
+                            User responsable = userRepository.findById(tareaConDatosNuevos.getResponsable().getId())
+                                    .orElseThrow(() -> new RuntimeException("Responsable no encontrado"));
+                            existing.setResponsable(responsable);
+                        } else {
+                            existing.setResponsable(null);
+                        }
                     }
 
                     return taskRepository.save(existing);

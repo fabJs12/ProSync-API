@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.OffsetDateTime;
 
@@ -28,21 +29,19 @@ public class Task {
     private OffsetDateTime dueDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
     @JoinColumn(name = "id_board",  nullable = false)
     private Board board;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
     @JoinColumn(name = "id_estado", nullable = false)
     private Estado estado;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
     @JoinColumn(name = "responsable_id")
     private User responsable;
 
     @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now()")
+    @CreationTimestamp
     private OffsetDateTime createdAt;
 
     public Task(String title, String description, Estado estado, OffsetDateTime dueDate, Board board, User responsable) {

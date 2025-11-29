@@ -1,5 +1,6 @@
 package com.example.projectapi.controller;
 
+import com.example.projectapi.dto.CreateTaskDTO;
 import com.example.projectapi.dto.TaskDTO;
 import com.example.projectapi.model.Board;
 import com.example.projectapi.model.Task;
@@ -59,27 +60,32 @@ public class TaskController {
         return ResponseEntity.ok(taskService.findByUsuarioDTO(user.getId()));
     }
 
-    @PostMapping("/board/{boardId}")
+    @PostMapping
     public ResponseEntity<TaskDTO> create(
-            @PathVariable Integer boardId,
-            @RequestParam Integer estadoId,
-            @RequestParam(required = false) Integer responsableId,
-            @RequestBody Task task,
+            @RequestBody CreateTaskDTO taskDTO,
             Authentication authentication
     ) {
-        Board board = boardService.findById(boardId)
+        Board board = boardService.findById(taskDTO.getBoardId())
                 .orElseThrow(() -> new RuntimeException("Board no encontrado"));
-
-        Integer projectId = board.getProject().getId();
 
         User user = userService.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        if(!projectService.esLider(projectId, user.getId())) {
+        if(!projectService.esLider(board.getProject().getId(), user.getId())) {
             return ResponseEntity.status(403).build();
         }
 
-        TaskDTO created = taskService.createDTO(task, boardId, estadoId, responsableId);
+        Task task = new Task();
+        task.setTitle(taskDTO.getTitle());
+        task.setDescription(taskDTO.getDescription());
+        task.setDueDate(taskDTO.getDueDate());
+
+        TaskDTO created = taskService.createDTO(
+                task,
+                taskDTO.getBoardId(),
+                taskDTO.getEstadoId(),
+                taskDTO.getResponsableId()
+        );
 
         return ResponseEntity.status(201).body(created);
     }
@@ -93,8 +99,9 @@ public class TaskController {
 
         User user = userService.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        
+
         boolean esLider = projectService.esLider(projectId, user.getId());
+
         boolean esResponsable = task.getResponsable()!= null && task.getResponsable().getId().equals(user.getId());
 
         if(!esLider && !esResponsable) {
