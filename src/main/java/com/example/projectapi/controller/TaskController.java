@@ -71,7 +71,9 @@ public class TaskController {
         User user = userService.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        if(!projectService.esLider(board.getProject().getId(), user.getId())) {
+        Integer projectId = board.getProject().getId();
+
+        if(!projectService.esMiembro(projectId, user.getId())) {
             return ResponseEntity.status(403).build();
         }
 
@@ -100,10 +102,7 @@ public class TaskController {
         User user = userService.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        boolean esLider = projectService.esLider(projectId, user.getId());
-        boolean esResponsable = task.getResponsable() != null && task.getResponsable().getId().equals(user.getId());
-
-        if(!esLider && !esResponsable) {
+        if(!projectService.esMiembro(projectId, user.getId())) {
             return ResponseEntity.status(403).build();
         }
 
@@ -122,7 +121,7 @@ public class TaskController {
         User user = userService.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        if(!projectService.esLider(projectId, user.getId())) {
+        if(!projectService.esMiembro(projectId, user.getId())) {
             return ResponseEntity.status(403).build();
         }
 
