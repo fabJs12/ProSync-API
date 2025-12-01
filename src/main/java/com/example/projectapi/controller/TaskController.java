@@ -21,10 +21,10 @@ public class TaskController {
     private final ProjectService projectService;
     private final UserService userService;
 
-    public TaskController(TaskService taskService, 
-                         BoardService boardService, 
-                         ProjectService projectService, 
-                         UserService userService) {
+    public TaskController(TaskService taskService,
+            BoardService boardService,
+            ProjectService projectService,
+            UserService userService) {
         this.taskService = taskService;
         this.boardService = boardService;
         this.projectService = projectService;
@@ -63,8 +63,7 @@ public class TaskController {
     @PostMapping
     public ResponseEntity<TaskDTO> create(
             @RequestBody CreateTaskDTO taskDTO,
-            Authentication authentication
-    ) {
+            Authentication authentication) {
         Board board = boardService.findById(taskDTO.getBoardId())
                 .orElseThrow(() -> new RuntimeException("Board no encontrado"));
 
@@ -73,7 +72,7 @@ public class TaskController {
 
         Integer projectId = board.getProject().getId();
 
-        if(!projectService.esMiembro(projectId, user.getId())) {
+        if (!projectService.esMiembro(projectId, user.getId())) {
             return ResponseEntity.status(403).build();
         }
 
@@ -86,14 +85,14 @@ public class TaskController {
                 task,
                 taskDTO.getBoardId(),
                 taskDTO.getEstadoId(),
-                taskDTO.getResponsableId()
-        );
+                taskDTO.getResponsableId());
 
         return ResponseEntity.status(201).body(created);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TaskDTO> update(@PathVariable Integer id, @RequestBody Task updatedTask, Authentication authentication) {
+    public ResponseEntity<TaskDTO> update(@PathVariable Integer id, @RequestBody Task updatedTask,
+            Authentication authentication) {
         Task task = taskService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
 
@@ -102,7 +101,7 @@ public class TaskController {
         User user = userService.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        if(!projectService.esMiembro(projectId, user.getId())) {
+        if (!projectService.esMiembro(projectId, user.getId())) {
             return ResponseEntity.status(403).build();
         }
 
@@ -121,7 +120,7 @@ public class TaskController {
         User user = userService.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        if(!projectService.esMiembro(projectId, user.getId())) {
+        if (!projectService.esMiembro(projectId, user.getId())) {
             return ResponseEntity.status(403).build();
         }
 

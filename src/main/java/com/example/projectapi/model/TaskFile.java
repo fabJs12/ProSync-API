@@ -11,7 +11,8 @@ import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "archivos", schema = "public")
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 public class TaskFile {
 
@@ -20,12 +21,8 @@ public class TaskFile {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(
-            name = "id_tarea",
-            nullable = false,
-            foreignKey = @ForeignKey(name = "fk_archivos_tarea")
-    )
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "board", "estado", "responsable", "files"})
+    @JoinColumn(name = "id_tarea", nullable = false, foreignKey = @ForeignKey(name = "fk_archivos_tarea"))
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler", "board", "estado", "responsable", "files" })
     private Task task;
 
     @Column(name = "archivo_url", nullable = false, columnDefinition = "TEXT")
@@ -37,7 +34,8 @@ public class TaskFile {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id") // Nombre de la columna en BD
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "password", "roles", "projects"}) // Evita bucles y datos sensibles
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler", "password", "roles", "projects" }) // Evita bucles y
+                                                                                                      // datos sensibles
     private User autor;
 
     // Constructor con parámetros

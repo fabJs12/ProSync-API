@@ -26,7 +26,8 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final UserService userService;
 
-    public AuthController(AuthenticationManager authenticationManager, UserDetailsService uds, JwtUtil jwtUtil, PasswordEncoder passwordEncoder, UserService userService) {
+    public AuthController(AuthenticationManager authenticationManager, UserDetailsService uds,
+                          JwtUtil jwtUtil, PasswordEncoder passwordEncoder, UserService userService) {
         this.authenticationManager = authenticationManager;
         this.userDetailsService = uds;
         this.jwtUtil = jwtUtil;
@@ -40,9 +41,7 @@ public class AuthController {
             Authentication auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginData.getUsername(),
-                            loginData.getPassword()
-                    )
-            );
+                            loginData.getPassword()));
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(loginData.getUsername());
 
@@ -63,21 +62,20 @@ public class AuthController {
 
             return ResponseEntity.ok("Usuario registrado correctamente");
         } catch (RuntimeException e) {
-            return ResponseEntity.status(400).body("Error al registrar: "  + e.getMessage());
+            return ResponseEntity.status(400).body("Error al registrar: " + e.getMessage());
         }
     }
 
     @PostMapping("/google")
     public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> request) {
         String idTokenString = request.get("token");
+        String requestedUsername = request.get("username"); // Optional
+
         try {
             // Verificación simple del token (para producción usar GoogleIdTokenVerifier)
             // Aquí decodificamos el payload para obtener el email
             // NOTA: En un entorno real, DEBES validar la firma del token con las librerías
             // de Google
-            // pero para este ejemplo rápido asumiremos que el frontend envía un token
-            // válido o
-            // usaremos una decodificación básica.
 
             // Opción A: Usar librería Google (recomendado)
             com.google.api.client.json.gson.GsonFactory jsonFactory = new com.google.api.client.json.gson.GsonFactory();
@@ -97,15 +95,11 @@ public class AuthController {
                 email = payload.getEmail();
                 name = (String) payload.get("name");
             } else {
-                // Fallback para desarrollo si la verificación estricta falla por falta de
-                // configuración
-                // (NO USAR EN PRODUCCIÓN SIN VALIDAR FIRMA)
-                // Decodificar JWT manualmente solo para obtener claims
+                // Fallback para desarrollo (NO USAR EN PRODUCCIÓN SIN VALIDAR FIRMA)
                 String[] parts = idTokenString.split("\\.");
                 if (parts.length < 2)
                     throw new RuntimeException("Token inválido");
                 String payloadJson = new String(java.util.Base64.getUrlDecoder().decode(parts[1]));
-                // Parsear JSON básico (asumiendo formato estándar)
                 email = payloadJson.split("\"email\":\"")[1].split("\"")[0];
                 try {
                     name = payloadJson.split("\"name\":\"")[1].split("\"")[0];
@@ -114,14 +108,20 @@ public class AuthController {
                 }
             }
 
-            // Buscar o crear usuario
+            // Buscar usuario
             User user = userService.findByEmail(email).orElse(null);
+
             if (user == null) {
+                // Si el usuario no existe y NO se proporcionó username, pedirlo
+                if (requestedUsername == null || requestedUsername.trim().isEmpty()) {
+                    return ResponseEntity.status(404).body("USER_NOT_FOUND");
+                }
+
+                // Si se proporcionó username, crear usuario
                 user = new User();
-                user.setUsername(email); // Usar email como username
+                user.setUsername(requestedUsername);
                 user.setEmail(email);
                 user.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString())); // Password aleatorio
-                // Asignar otros campos si es necesario
                 userService.create(user);
             }
 
@@ -138,7 +138,7 @@ public class AuthController {
 
     @GetMapping("/perfil")
     public ResponseEntity<?> getPerfil(Authentication authentication) {
-        String username  = authentication.getName();
+        String username = authentication.getName();
         User user = userService.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 

@@ -13,7 +13,8 @@ import java.util.HashSet;
 
 @Entity
 @Table(name = "usuarios", schema = "public")
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 public class User {
 

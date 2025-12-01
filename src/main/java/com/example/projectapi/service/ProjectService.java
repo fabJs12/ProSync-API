@@ -17,7 +17,8 @@ public class ProjectService {
     private final UserProjectRepository userProjectRepository;
     private final UserProjectService userProjectService;
 
-    public ProjectService(ProjectRepository projectRepository, RolRepository rolRepository, UserProjectRepository userProjectRepository, UserProjectService userProjectService) {
+    public ProjectService(ProjectRepository projectRepository, RolRepository rolRepository,
+            UserProjectRepository userProjectRepository, UserProjectService userProjectService) {
         this.projectRepository = projectRepository;
         this.rolRepository = rolRepository;
         this.userProjectRepository = userProjectRepository;
@@ -30,7 +31,8 @@ public class ProjectService {
 
     public boolean esLider(Integer projectId, Integer userId) {
         Rol rolLider = rolRepository.findByRol("Lider")
-                .orElseThrow(() -> new RuntimeException("Rol Lider no encontrado"));;
+                .orElseThrow(() -> new RuntimeException("Rol Lider no encontrado"));
+        ;
 
         List<Project> proyectosLider = projectRepository
                 .findByUsuariosAsociadosUsuarioIdAndUsuariosAsociadosRol(userId, rolLider);
@@ -42,12 +44,12 @@ public class ProjectService {
         return projectRepository.findByUsuariosAsociadosUsuarioId(userId);
     }
 
-    public List<Project> getProyectosUsuarioEsLider(Integer userId, Rol rolLider) { 
-        return projectRepository.findByUsuariosAsociadosUsuarioIdAndUsuariosAsociadosRol(userId, rolLider); 
+    public List<Project> getProyectosUsuarioEsLider(Integer userId, Rol rolLider) {
+        return projectRepository.findByUsuariosAsociadosUsuarioIdAndUsuariosAsociadosRol(userId, rolLider);
     }
 
-    public List<Project> getProyectosUsuarioEsMiembro(Integer userId, Rol rolMiembro) { 
-        return projectRepository.findByUsuariosAsociadosUsuarioIdAndUsuariosAsociadosRol(userId, rolMiembro); 
+    public List<Project> getProyectosUsuarioEsMiembro(Integer userId, Rol rolMiembro) {
+        return projectRepository.findByUsuariosAsociadosUsuarioIdAndUsuariosAsociadosRol(userId, rolMiembro);
     }
 
     public boolean esMiembro(Integer userId, Integer projectId) {
@@ -83,15 +85,15 @@ public class ProjectService {
                         List<UserProject> members = userProjectRepository.findByProyectoId(id);
                         for (UserProject up : members) {
                             Optional<Project> duplicado = projectRepository.findByUsuarioIdAndNombre(
-                                up.getUsuario().getId(), 
-                                upProject.getName()
-                            );
+                                    up.getUsuario().getId(),
+                                    upProject.getName());
                             if (duplicado.isPresent() && !duplicado.get().getId().equals(id)) {
-                                throw new RuntimeException("Ya existe un proyecto con este nombre para uno de los miembros");
+                                throw new RuntimeException(
+                                        "Ya existe un proyecto con este nombre para uno de los miembros");
                             }
                         }
                     }
-                    
+
                     existing.setName(upProject.getName());
                     existing.setDescription(upProject.getDescription());
                     return projectRepository.save(existing);
@@ -102,7 +104,7 @@ public class ProjectService {
     @Transactional
     public void delete(Integer id) {
         Project project = projectRepository.findById(id)
-                        .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
 
         userProjectRepository.deleteAll(userProjectRepository.findByProyectoId(id));
 

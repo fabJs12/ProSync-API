@@ -10,7 +10,8 @@ import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "comentarios")
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 public class Comment {
 
@@ -20,18 +21,12 @@ public class Comment {
 
     // Relación con la tarea
     @ManyToOne
-    @JoinColumn(
-            name = "id_tarea",
-            foreignKey = @ForeignKey(name = "fk_comentarios_tarea")
-    )
+    @JoinColumn(name = "id_tarea", foreignKey = @ForeignKey(name = "fk_comentarios_tarea"))
     private Task task;
 
     // Relación con el usuario que hizo el comentario
     @ManyToOne
-    @JoinColumn(
-            name = "id_usuario",
-            foreignKey = @ForeignKey(name = "fk_comentarios_usuario")
-    )
+    @JoinColumn(name = "id_usuario", foreignKey = @ForeignKey(name = "fk_comentarios_usuario"))
     private User user;
 
     @Column(nullable = false, columnDefinition = "TEXT")

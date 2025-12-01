@@ -19,7 +19,8 @@ public class FileService {
     private final StorageService storageService;
     private final UserRepository userRepository;
 
-    public FileService(FileRepository fileRepository, TaskRepository taskRepository, StorageService storageService, UserRepository userRepository) {
+    public FileService(FileRepository fileRepository, TaskRepository taskRepository, StorageService storageService,
+            UserRepository userRepository) {
         this.fileRepository = fileRepository;
         this.taskRepository = taskRepository;
         this.storageService = storageService;
@@ -51,8 +52,7 @@ public class FileService {
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx nuevo
                 "application/vnd.ms-excel", // .xls antiguo
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx nuevo
-                "text/plain"
-        );
+                "text/plain");
 
         if (tipoArchivo == null || !tiposPermitidos.contains(tipoArchivo)) {
             throw new RuntimeException("Formato no permitido: " + tipoArchivo);
@@ -63,7 +63,6 @@ public class FileService {
 
         User usuario = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
 
         String urlGenerada = storageService.uploadFile(multipartFile);
 
