@@ -1,5 +1,6 @@
 package com.example.projectapi.service;
 
+import com.example.projectapi.dto.ProjectDetailDTO;
 import com.example.projectapi.model.*;
 import com.example.projectapi.repository.ProjectRepository;
 import com.example.projectapi.repository.RolRepository;
@@ -40,6 +41,32 @@ public class ProjectService {
 
     public List<Project> getProyectosUsuario(Integer userId) {
         return projectRepository.findByUsuariosAsociadosUsuarioId(userId);
+    }
+
+    public ProjectDetailDTO getProjectWithMembers(Integer projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
+
+        ProjectDetailDTO dto = new ProjectDetailDTO();
+        dto.setId(project.getId());
+        dto.setName(project.getName());
+        dto.setDescription(project.getDescription());
+        dto.setCreatedAt(project.getCreatedAt());
+
+        List<ProjectDetailDTO.MemberDTO> miembros = project.getUsuariosAsociados().stream()
+                .map(userProject -> {
+                    ProjectDetailDTO.MemberDTO member = new ProjectDetailDTO.MemberDTO();
+                    member.setUserId(userProject.getUsuario().getId());
+                    member.setUsername(userProject.getUsuario().getUsername());
+                    member.setEmail(userProject.getUsuario().getEmail());
+                    member.setRol(userProject.getRol().getRol()); // Asumiendo que Rol tiene getRol()
+                    return member;
+                })
+                .toList();
+
+        dto.setMiembros(miembros);
+
+        return dto;
     }
 
     public List<Project> getProyectosUsuarioEsLider(Integer userId, Rol rolLider) { 

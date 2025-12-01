@@ -1,5 +1,6 @@
 package com.example.projectapi.controller;
 
+import com.example.projectapi.dto.ProjectDetailDTO;
 import com.example.projectapi.model.Project;
 import com.example.projectapi.model.Rol;
 import com.example.projectapi.model.User;
@@ -37,6 +38,20 @@ public class ProjectController {
 
         List<Project> proyectos = projectService.getProyectosUsuario(user.getId());
         return ResponseEntity.ok(proyectos);
+    }
+
+    @GetMapping("/{id}/detalle")
+    public ResponseEntity<ProjectDetailDTO> getProjectDetails(@PathVariable Integer id, Authentication authentication) {
+
+        User user = userService.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (!projectService.esMiembro(id, user.getId())) {
+            return ResponseEntity.status(403).build();
+        }
+
+        ProjectDetailDTO details = projectService.getProjectWithMembers(id);
+        return ResponseEntity.ok(details);
     }
 
     @GetMapping("/{id}")
