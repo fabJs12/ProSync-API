@@ -1,5 +1,6 @@
 package com.example.projectapi.service;
 
+import com.example.projectapi.dto.ProjectDetailDTO;
 import com.example.projectapi.model.*;
 import com.example.projectapi.repository.ProjectRepository;
 import com.example.projectapi.repository.RolRepository;
@@ -17,8 +18,7 @@ public class ProjectService {
     private final UserProjectRepository userProjectRepository;
     private final UserProjectService userProjectService;
 
-    public ProjectService(ProjectRepository projectRepository, RolRepository rolRepository,
-            UserProjectRepository userProjectRepository, UserProjectService userProjectService) {
+    public ProjectService(ProjectRepository projectRepository, RolRepository rolRepository, UserProjectRepository userProjectRepository, UserProjectService userProjectService) {
         this.projectRepository = projectRepository;
         this.rolRepository = rolRepository;
         this.userProjectRepository = userProjectRepository;
@@ -31,8 +31,7 @@ public class ProjectService {
 
     public boolean esLider(Integer projectId, Integer userId) {
         Rol rolLider = rolRepository.findByRol("Lider")
-                .orElseThrow(() -> new RuntimeException("Rol Lider no encontrado"));
-        ;
+                .orElseThrow(() -> new RuntimeException("Rol Lider no encontrado"));;
 
         List<Project> proyectosLider = projectRepository
                 .findByUsuariosAsociadosUsuarioIdAndUsuariosAsociadosRol(userId, rolLider);
@@ -44,12 +43,38 @@ public class ProjectService {
         return projectRepository.findByUsuariosAsociadosUsuarioId(userId);
     }
 
-    public List<Project> getProyectosUsuarioEsLider(Integer userId, Rol rolLider) {
-        return projectRepository.findByUsuariosAsociadosUsuarioIdAndUsuariosAsociadosRol(userId, rolLider);
+    public ProjectDetailDTO getProjectWithMembers(Integer projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
+
+        ProjectDetailDTO dto = new ProjectDetailDTO();
+        dto.setId(project.getId());
+        dto.setName(project.getName());
+        dto.setDescription(project.getDescription());
+        dto.setCreatedAt(project.getCreatedAt());
+
+        List<ProjectDetailDTO.MemberDTO> miembros = project.getUsuariosAsociados().stream()
+                .map(userProject -> {
+                    ProjectDetailDTO.MemberDTO member = new ProjectDetailDTO.MemberDTO();
+                    member.setUserId(userProject.getUsuario().getId());
+                    member.setUsername(userProject.getUsuario().getUsername());
+                    member.setEmail(userProject.getUsuario().getEmail());
+                    member.setRol(userProject.getRol().getRol()); // Asumiendo que Rol tiene getRol()
+                    return member;
+                })
+                .toList();
+
+        dto.setMiembros(miembros);
+
+        return dto;
     }
 
-    public List<Project> getProyectosUsuarioEsMiembro(Integer userId, Rol rolMiembro) {
-        return projectRepository.findByUsuariosAsociadosUsuarioIdAndUsuariosAsociadosRol(userId, rolMiembro);
+    public List<Project> getProyectosUsuarioEsLider(Integer userId, Rol rolLider) { 
+        return projectRepository.findByUsuariosAsociadosUsuarioIdAndUsuariosAsociadosRol(userId, rolLider); 
+    }
+
+    public List<Project> getProyectosUsuarioEsMiembro(Integer userId, Rol rolMiembro) { 
+        return projectRepository.findByUsuariosAsociadosUsuarioIdAndUsuariosAsociadosRol(userId, rolMiembro); 
     }
 
     public boolean esMiembro(Integer userId, Integer projectId) {
@@ -85,15 +110,15 @@ public class ProjectService {
                         List<UserProject> members = userProjectRepository.findByProyectoId(id);
                         for (UserProject up : members) {
                             Optional<Project> duplicado = projectRepository.findByUsuarioIdAndNombre(
-                                    up.getUsuario().getId(),
-                                    upProject.getName());
+                                up.getUsuario().getId(), 
+                                upProject.getName()
+                            );
                             if (duplicado.isPresent() && !duplicado.get().getId().equals(id)) {
-                                throw new RuntimeException(
-                                        "Ya existe un proyecto con este nombre para uno de los miembros");
+                                throw new RuntimeException("Ya existe un proyecto con este nombre para uno de los miembros");
                             }
                         }
                     }
-
+                    
                     existing.setName(upProject.getName());
                     existing.setDescription(upProject.getDescription());
                     return projectRepository.save(existing);
@@ -104,7 +129,7 @@ public class ProjectService {
     @Transactional
     public void delete(Integer id) {
         Project project = projectRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
+                        .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
 
         userProjectRepository.deleteAll(userProjectRepository.findByProyectoId(id));
 
