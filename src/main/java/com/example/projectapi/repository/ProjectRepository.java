@@ -11,10 +11,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ProjectRepository extends JpaRepository<Project, Integer>{
+public interface ProjectRepository extends JpaRepository<Project, Integer> {
     List<Project> findByUsuariosAsociadosUsuarioIdAndUsuariosAsociadosRol(Integer userId, Rol rol);
+
     List<Project> findByUsuariosAsociadosUsuarioId(Integer userId);
-    
+
     @Query("SELECT p FROM Project p JOIN p.usuariosAsociados up WHERE up.usuario.id = :userId AND LOWER(p.name) = LOWER(:nombre)")
     Optional<Project> findByUsuarioIdAndNombre(@Param("userId") Integer userId, @Param("nombre") String nombre);
 }

@@ -23,7 +23,8 @@ public class ProjectController {
     private final RolService rolService;
     private final UserProjectService userProjectService;
 
-    public ProjectController(ProjectService projectService, UserService userService, RolService rolService,  UserProjectService userProjectService) {
+    public ProjectController(ProjectService projectService, UserService userService, RolService rolService,
+            UserProjectService userProjectService) {
         this.projectService = projectService;
         this.userService = userService;
         this.rolService = rolService;
@@ -88,11 +89,11 @@ public class ProjectController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Project> update(@PathVariable Integer id, @RequestBody Project project, Authentication authentication) {
+    public ResponseEntity<Project> update(@PathVariable Integer id, @RequestBody Project project,
+            Authentication authentication) {
         String username = authentication.getName();
         User user = userService.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
 
         if (!projectService.esLider(id, user.getId())) {
             return ResponseEntity.status(403).build();
@@ -107,7 +108,7 @@ public class ProjectController {
         User user = userService.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        if(!projectService.esLider(id, user.getId())) {
+        if (!projectService.esLider(id, user.getId())) {
             return ResponseEntity.status(403).build();
         }
         projectService.delete(id);
